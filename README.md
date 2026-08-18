@@ -71,6 +71,7 @@ src/snippets/       # 実行可能なRustコード (表示・実行・検証の�
 src/components/     # RustPlay.astro (Playground実行コンポーネント)
 examples/           # ローカル実行用Cargoワークスペース (wgpu / criterion / BLAS)
 scripts/play.sh     # スニペットをPlayground APIで実行・検証するスクリプト
+scripts/generate-ogp.ts  # OGP画像の生成 (satori + resvg、bun run ogp)
 ```
 
 ## examples の実行

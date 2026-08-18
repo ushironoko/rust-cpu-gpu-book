@@ -12,6 +12,28 @@ export default defineConfig({
       title: 'RustではじめるCPUとGPU',
       description:
         'Webアプリケーション開発者のための、RustでたどるCPU・GPUの教科書',
+      head: [
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image',
+            content: 'https://rust-cpu-gpu-book.void.app/ogp.png',
+          },
+        },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        {
+          tag: 'meta',
+          attrs: { name: 'twitter:card', content: 'summary_large_image' },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'twitter:image',
+            content: 'https://rust-cpu-gpu-book.void.app/ogp.png',
+          },
+        },
+      ],
       defaultLocale: 'root',
       locales: {
         root: { label: '日本語', lang: 'ja' },

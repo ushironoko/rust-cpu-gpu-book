@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "void deploy --dir dist"
+    "deploy": "void deploy --dir dist",
+    "ogp": "bun run scripts/generate-ogp.ts"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.7",
@@ -17,6 +18,9 @@
     "sharp": "0.35.3"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "@types/react": "19.2.18",
+    "satori": "0.29.0",
     "void": "0.10.12"
   }
 }
