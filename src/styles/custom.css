@@ -59,7 +59,6 @@
 }
 
 .rust-play__btn[disabled] {
-  opacity: 0.5;
   cursor: wait;
 }
 
