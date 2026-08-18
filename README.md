@@ -3,6 +3,8 @@
 Webアプリケーション開発者のための、RustでたどるCPU・GPUの教科書。
 Astro Starlight (MDX) 製のドキュメントサイトです。
 
+**📖 公開サイト: https://rust-cpu-gpu-book.void.app**
+
 - **基礎編12章 + 応用編16章 + 用語集(約140語)** の全28章構成
 - 本文中のRustコードの多くは、ブラウザ上から
   [Rust Playground](https://play.rust-lang.org/) で**その場で実行・編集**できます
@@ -21,15 +23,17 @@ Astro Starlight (MDX) 製のドキュメントサイトです。
 倍率や傾向は環境が変われば変わります(本文23章では、環境差で
 教科書の定石が覆る例も扱っています)。手元での再計測を推奨します。
 
-## 読む
+## 読む / 開発する
 
-サイトはローカルでビルドして読みます。
+公開サイト https://rust-cpu-gpu-book.void.app でそのまま読めます。
+手元で動かす場合:
 
 ```sh
 bun install
 bun run dev      # 開発サーバ (http://localhost:4321)
 bun run build    # dist/ へ静的ビルド
 bun run preview  # ビルド結果の確認
+bun run deploy   # void で Cloudflare Workers へデプロイ
 ```
 
 ## 目次

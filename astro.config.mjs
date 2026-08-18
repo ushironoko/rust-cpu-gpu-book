@@ -4,6 +4,7 @@ import starlight from '@astrojs/starlight';
 import mermaid from 'astro-mermaid';
 
 export default defineConfig({
+  site: 'https://rust-cpu-gpu-book.void.app',
   integrations: [
     // astro-mermaid は markdown 処理系より先に登録する
     mermaid({ autoTheme: true }),

@@ -11,6 +11,10 @@ examples/target/
 # local plans (session coordination)
 plans/
 
+# void
+.void
+.wrangler
+
 # misc
 .DS_Store
 *.log

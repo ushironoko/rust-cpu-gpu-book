@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "deploy": "void deploy --dir dist"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.7",
@@ -14,5 +15,8 @@
     "astro-mermaid": "2.1.0",
     "mermaid": "11.16.1",
     "sharp": "0.35.3"
+  },
+  "devDependencies": {
+    "void": "0.10.12"
   }
 }
