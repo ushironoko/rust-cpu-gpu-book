@@ -1,0 +1,144 @@
+/* ---- RustPlay: インタラクティブ実行ブロック ---- */
+.rust-play {
+  margin: 1rem 0;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rust-play .expressive-code,
+.rust-play .expressive-code .frame,
+.rust-play .expressive-code pre {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  margin: 0;
+}
+
+.rust-play__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--sl-color-gray-6, var(--sl-color-gray-5));
+  font-size: var(--sl-text-sm);
+}
+
+.rust-play__toolbar .spacer {
+  flex: 1;
+}
+
+.rust-play__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 0.35rem;
+  background: var(--sl-color-bg);
+  color: var(--sl-color-white);
+  font-size: var(--sl-text-sm);
+  cursor: pointer;
+}
+
+.rust-play__btn:hover {
+  border-color: var(--sl-color-accent);
+}
+
+.rust-play__btn--run {
+  background: var(--sl-color-accent-low);
+  border-color: var(--sl-color-accent);
+}
+
+.rust-play__btn[disabled] {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.rust-play__btn[hidden] {
+  display: none;
+}
+
+.rust-play__link {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+  text-decoration: none;
+}
+
+.rust-play__link:hover {
+  color: var(--sl-color-accent-high);
+}
+
+.rust-play__editor {
+  display: none;
+  width: 100%;
+  min-height: 12rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  resize: vertical;
+  background: var(--sl-color-gray-7, var(--sl-color-black));
+  color: var(--sl-color-white);
+  font-family: var(--__sl-font-mono, ui-monospace, monospace);
+  font-size: var(--sl-text-xs);
+  line-height: 1.65;
+  tab-size: 4;
+}
+
+.rust-play.is-editing .rust-play__editor {
+  display: block;
+}
+
+.rust-play.is-editing .rust-play__code {
+  display: none;
+}
+
+.rust-play__output {
+  display: none;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-black);
+  color: var(--sl-color-gray-2);
+  font-family: var(--__sl-font-mono, ui-monospace, monospace);
+  font-size: var(--sl-text-xs);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.rust-play__output.is-visible {
+  display: block;
+}
+
+.rust-play__output .stderr {
+  color: var(--sl-color-orange, #e0af68);
+}
+
+.rust-play__output .error {
+  color: var(--sl-color-red, #f7768e);
+}
+
+/* ---- 用語(初出)の強調 ---- */
+.term {
+  font-weight: 600;
+}
+
+/* ---- 手書きSVG図のテーマ対応 ---- */
+.book-figure {
+  margin: 1.5rem auto;
+  text-align: center;
+}
+
+.book-figure svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.book-figure figcaption {
+  margin-top: 0.5rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}

@@ -1,0 +1,84 @@
+---
+title: さらに学ぶには
+description: 本書の先へ進むための書籍、ドキュメント、ツールの案内。
+sidebar:
+  label: さらに学ぶには
+---
+
+本書で扱った各分野を深めるための、定評ある資料を挙げます。
+
+## コンピュータアーキテクチャ全般
+
+- **『コンピュータシステムの理論と実装』/ CS:APP** —
+  英語では *Computer Systems: A Programmer's Perspective* (Bryant & O'Hallaron)。
+  プログラマ視点でハードウェアを学ぶ定番の教科書です。
+  本書のPart Iを体系的に深めたい場合の第一候補です
+- [**What Every Programmer Should Know About Memory**](https://people.freebsd.org/~lstewart/articles/cpumemory.pdf)
+  (Ulrich Drepper) — メモリ階層とキャッシュについての古典的な論文です。
+  2007年の文書ですが、2章の内容の原典として今も読む価値があります
+- [**Agner Fog's optimization manuals**](https://www.agner.org/optimize/) —
+  x86の命令レイテンシ表や最適化技法の網羅的資料。
+  アセンブリレベルの最適化に踏み込むなら必携です
+
+## Rustの性能
+
+- [**The Rust Performance Book**](https://nnethercote.github.io/perf-book/) —
+  Rustの性能改善手法を簡潔にまとめた無料の電子書籍です。
+  本書のPart IIの実務的な補完として最適です
+- [**Rust Atomics and Locks**](https://marabos.nl/atomics/) (Mara Bos) —
+  5章で「1冊の本になる」と書いた、アトミックとメモリオーダリングの
+  その1冊です。無料公開されています
+- [**The Rustonomicon**](https://doc.rust-lang.org/nomicon/) —
+  unsafe Rustの公式ガイド。`get_unchecked`などに手を出す前に
+
+## 計測ツール
+
+- [criterion](https://github.com/bheisler/criterion.rs) — ベンチマーク(8章)
+- [samply](https://github.com/mstange/samply) — プロファイラ(8章)
+- [cargo-show-asm](https://github.com/pacak/cargo-show-asm) — アセンブリ表示(8章)
+- [Compiler Explorer](https://godbolt.org/) — ブラウザでアセンブリ確認(1章)
+- [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph) — フレームグラフ生成
+
+## GPU
+
+- [**WebGPU仕様**](https://www.w3.org/TR/webgpu/) /
+  [**WGSL仕様**](https://www.w3.org/TR/WGSL/) — 一次情報です
+- [**Learn wgpu**](https://sotrh.github.io/learn-wgpu/) —
+  wgpuの定番チュートリアル。グラフィックス寄りですが、
+  11章の先へ進むのに適しています
+- [**wgpu公式サンプル**](https://github.com/gfx-rs/wgpu/tree/trunk/examples) —
+  本書のコードもここのhello-computeを出発点にしています
+- **CUDA C++ Programming Guide** (NVIDIA) — CUDAに進む場合の一次資料。
+  ワープ、共有メモリ、コアレッシングなど、9〜10章の概念の
+  NVIDIA版の詳細が学べます
+- [**burn**](https://burn.dev/) / [**candle**](https://github.com/huggingface/candle) —
+  Rustの機械学習フレームワーク。「行列演算を速くしたいだけ」なら
+  自作カーネルより先にこちらを検討してください
+
+## 応用編の先へ
+
+- **Computer Architecture: A Quantitative Approach** (Hennessy & Patterson) —
+  アーキテクチャの定量的研究の standard。Part IVの先の世界です
+- [**Operating Systems: Three Easy Pieces**](https://pages.cs.wisc.edu/~remzi/OSTEP/)
+  (OSTEP) — 仮想メモリ(14章)とOSの層(27章)を体系的に学ぶ
+  無料公開の教科書です
+- **Systems Performance** (Brendan Gregg) — 27〜28章の実務面
+  (計測・OS・クラウド)の決定版です
+- **Programming Massively Parallel Processors** (Hwu, Kirk & Hajj) —
+  Part VIのカーネル最適化をCUDAで深める定番教科書です
+- [**Async Book**](https://rust-lang.github.io/async-book/) /
+  [tokioチュートリアル](https://tokio.rs/tokio/tutorial) — 19章の先の
+  async実務です
+- [crossbeam](https://github.com/crossbeam-rs/crossbeam) — 17章の
+  ロックフリー既製品。[HdrHistogram](https://github.com/HdrHistogram/HdrHistogram_rust) —
+  28章のレイテンシ分布計測の定番です
+- [iai-callgrind](https://github.com/iai-callgrind/iai-callgrind) —
+  命令数ベースの安定したベンチマーク(28章)
+
+## 本書のコードについて
+
+本書のすべての実行可能コードは、リポジトリの`src/snippets/`
+(ブラウザ実行対応)と`examples/`(ローカル実行、GPU含む)にあります。
+数値は筆者の環境(Apple M4 / Rust Playground)での実測であり、
+環境が違えば数字も変わります。ぜひ手元で再計測してください。
+それこそが8章で学んだことの実践です。

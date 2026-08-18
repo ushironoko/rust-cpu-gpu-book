@@ -1,0 +1,16 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# Rust
+examples/target/
+
+# local plans (session coordination)
+plans/
+
+# misc
+.DS_Store
+*.log

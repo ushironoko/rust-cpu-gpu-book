@@ -1,0 +1,198 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  /** 実行するRustコード。`?raw` インポートで渡すこと */
+  code: string;
+  /** Rust のリリースチャンネル */
+  channel?: 'stable' | 'beta' | 'nightly';
+  /** ビルドモード */
+  mode?: 'debug' | 'release';
+  /** エディション */
+  edition?: '2015' | '2018' | '2021' | '2024';
+  /** コードブロックに表示するタイトル */
+  title?: string;
+}
+
+const {
+  code,
+  channel = 'stable',
+  mode = 'debug',
+  edition = '2024',
+  title,
+} = Astro.props;
+
+const src = code.replace(/\n+$/, '\n');
+const playgroundUrl = `https://play.rust-lang.org/?version=${channel}&mode=${mode}&edition=${edition}&code=${encodeURIComponent(src)}`;
+---
+
+<div
+  class="rust-play"
+  data-channel={channel}
+  data-mode={mode}
+  data-edition={edition}
+>
+  <div class="rust-play__code"><Code code={src} lang="rust" title={title} /></div>
+  <textarea class="rust-play__editor" spellcheck="false">{src}</textarea>
+  <div class="rust-play__toolbar">
+    <button class="rust-play__btn rust-play__btn--run" type="button">
+      ▶ 実行
+    </button>
+    <button class="rust-play__btn rust-play__btn--edit" type="button">
+      編集
+    </button>
+    <button class="rust-play__btn rust-play__btn--reset" type="button" hidden>
+      リセット
+    </button>
+    <span class="spacer"></span>
+    <span class="rust-play__meta">{channel} / {mode}</span>
+    <a
+      class="rust-play__link"
+      href={playgroundUrl}
+      target="_blank"
+      rel="noopener noreferrer">Playgroundで開く ↗</a
+    >
+  </div>
+  <pre class="rust-play__output" aria-live="polite"></pre>
+</div>
+
+<script>
+  const API = 'https://play.rust-lang.org/execute';
+
+  const q = <T extends Element>(root: Element, sel: string) =>
+    root.querySelector(sel) as T;
+
+  function currentCode(root: HTMLElement): string {
+    return q<HTMLTextAreaElement>(root, '.rust-play__editor').value;
+  }
+
+  function setOutput(root: HTMLElement, nodes: (HTMLElement | string)[]) {
+    const out = q<HTMLPreElement>(root, '.rust-play__output');
+    out.replaceChildren(...nodes);
+    out.classList.add('is-visible');
+  }
+
+  function span(cls: string, text: string): HTMLElement {
+    const el = document.createElement('span');
+    el.className = cls;
+    el.textContent = text;
+    return el;
+  }
+
+  async function run(root: HTMLElement) {
+    const btn = q<HTMLButtonElement>(root, '.rust-play__btn--run');
+    const editor = q<HTMLTextAreaElement>(root, '.rust-play__editor');
+    const editBtn = q<HTMLButtonElement>(root, '.rust-play__btn--edit');
+    const resetBtn = q<HTMLButtonElement>(root, '.rust-play__btn--reset');
+    // 実行中の編集を防ぐ(古いコードの結果が新しいコードの出力に見えるのを避ける)
+    btn.disabled = true;
+    editor.readOnly = true;
+    editBtn.disabled = true;
+    resetBtn.disabled = true;
+    setOutput(root, ['コンパイルと実行中…（play.rust-lang.org を利用）']);
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: root.dataset.channel,
+          mode: root.dataset.mode,
+          edition: root.dataset.edition,
+          crateType: 'bin',
+          tests: false,
+          backtrace: false,
+          code: currentCode(root),
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as {
+        success: boolean;
+        exitDetail?: string;
+        stdout: string;
+        stderr: string;
+      };
+      const nodes: (HTMLElement | string)[] = [];
+      // コンパイラの警告・エラーは stderr に入る。Cargo自身の進行表示
+      // (Compiling/Finished/Running)だけを取り除いて表示する
+      const stderr = data.stderr
+        .split('\n')
+        .filter(
+          (l) =>
+            !/^\s*(Compiling playground v|Finished `(dev|release)` profile|Running `target\/)/.test(
+              l
+            )
+        )
+        .join('\n')
+        .trim();
+      if (stderr) nodes.push(span(data.success ? 'stderr' : 'error', stderr));
+      if (stderr && data.stdout) nodes.push('\n\n');
+      if (data.stdout) nodes.push(data.stdout);
+      if (!data.success && data.exitDetail) {
+        if (nodes.length > 0) nodes.push('\n\n');
+        nodes.push(span('error', data.exitDetail));
+      }
+      if (nodes.length === 0) nodes.push('（出力はありません）');
+      setOutput(root, nodes);
+    } catch (err) {
+      setOutput(root, [
+        span(
+          'error',
+          `実行環境に接続できませんでした: ${err instanceof Error ? err.message : String(err)}`
+        ),
+      ]);
+    } finally {
+      btn.disabled = false;
+      editor.readOnly = false;
+      editBtn.disabled = false;
+      resetBtn.disabled = false;
+    }
+  }
+
+  function enterEdit(root: HTMLElement) {
+    root.classList.add('is-editing');
+    q<HTMLButtonElement>(root, '.rust-play__btn--edit').hidden = true;
+    q<HTMLButtonElement>(root, '.rust-play__btn--reset').hidden = false;
+    const editor = q<HTMLTextAreaElement>(root, '.rust-play__editor');
+    editor.style.minHeight = `${Math.min(editor.scrollHeight + 8, 480)}px`;
+    editor.focus();
+  }
+
+  function resetEdit(root: HTMLElement) {
+    const editor = q<HTMLTextAreaElement>(root, '.rust-play__editor');
+    editor.value = editor.defaultValue;
+    root.classList.remove('is-editing');
+    q<HTMLButtonElement>(root, '.rust-play__btn--edit').hidden = false;
+    q<HTMLButtonElement>(root, '.rust-play__btn--reset').hidden = true;
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const root = target.closest<HTMLElement>('.rust-play');
+    if (!root) return;
+    if (target.closest('.rust-play__btn--run')) void run(root);
+    else if (target.closest('.rust-play__btn--edit')) enterEdit(root);
+    else if (target.closest('.rust-play__btn--reset')) resetEdit(root);
+  });
+
+  // 編集後は「Playgroundで開く」リンクも現在のコードを反映する
+  // (click のキャプチャ段階なら、キーボード操作でも遷移前に書き換えられる)
+  document.addEventListener(
+    'click',
+    (e) => {
+      const link = (e.target as HTMLElement).closest<HTMLAnchorElement>(
+        '.rust-play__link'
+      );
+      if (!link) return;
+      const root = link.closest<HTMLElement>('.rust-play');
+      if (!root) return;
+      const params = new URLSearchParams({
+        version: root.dataset.channel ?? 'stable',
+        mode: root.dataset.mode ?? 'debug',
+        edition: root.dataset.edition ?? '2024',
+        code: currentCode(root),
+      });
+      link.href = `https://play.rust-lang.org/?${params}`;
+    },
+    true
+  );
+</script>

@@ -1,0 +1,9 @@
+[package]
+name = "ch23-reduction"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+wgpu.workspace = true
+pollster.workspace = true
+bytemuck.workspace = true

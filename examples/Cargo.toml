@@ -1,0 +1,15 @@
+[workspace]
+resolver = "3"
+members = ["ch08-bench", "ch11-vector-add", "ch12-matmul", "ch23-reduction", "ch24-overlap", "ch25-gemm-lib", "ch26-timestamp"]
+
+[workspace.package]
+edition = "2024"
+
+[workspace.dependencies]
+wgpu = "30.0.0"
+pollster = "1.0.1"
+bytemuck = "1.25.2"
+rayon = "1.11.0"
+
+[profile.release]
+lto = "thin"

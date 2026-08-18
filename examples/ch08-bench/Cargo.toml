@@ -1,0 +1,13 @@
+[package]
+name = "ch08-bench"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+criterion = "=0.8.2"
+
+[[bench]]
+name = "build_vec"
+harness = false
