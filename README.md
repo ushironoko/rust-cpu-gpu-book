@@ -3,52 +3,91 @@
 Webアプリケーション開発者のための、RustでたどるCPU・GPUの教科書。
 Astro Starlight (MDX) 製のドキュメントサイトです。
 
-- 基礎編12章 + 応用編16章 + 用語集。
-  基礎編: CPUの仕組み(Part I)、Rustコンパイラと最適化(Part II)、GPU(Part III)。
-  応用編: CPUとメモリの深層(Part IV)、Rustの深層(Part V)、GPUの深層(Part VI)、システムと実践(Part VII)
-- 本文中のRustコードの多くは、ブラウザ上から [Rust Playground](https://play.rust-lang.org/) で**その場で実行・編集**できます
-- 図はmermaidとインラインSVG。実測値はすべて実際に計測したものです
+- **基礎編12章 + 応用編16章 + 用語集(約140語)** の全28章構成
+- 本文中のRustコードの多くは、ブラウザ上から
+  [Rust Playground](https://play.rust-lang.org/) で**その場で実行・編集**できます
+- 図はmermaidとインラインSVG。本文の実測値は、すべて実際に
+  計測したものです(Rust Playground または Apple M4。環境は本文に明記)
 
-## 開発
+## 読む
+
+サイトはローカルでビルドして読みます。
 
 ```sh
 bun install
-bun run dev      # 開発サーバ
+bun run dev      # 開発サーバ (http://localhost:4321)
 bun run build    # dist/ へ静的ビルド
 bun run preview  # ビルド結果の確認
 ```
 
-## 構成
+## 目次
+
+**基礎編** — 前提知識ゼロから、最短経路で「仕組みで速度を説明できる」状態へ
+
+| Part | 章 |
+| --- | --- |
+| I CPUを知る | 1 プログラムはどう動くか / 2 メモリ階層とキャッシュ / 3 パイプラインと分岐予測 / 4 SIMDとベクトル化 / 5 マルチコアと並列処理 |
+| II Rustと最適化 | 6 コンパイラがしていること / 7 ゼロコスト抽象化の実際 / 8 計測してから最適化する |
+| III GPUを知る | 9 GPUという計算機 / 10 GPUのメモリと転送 / 11 RustからGPUを使う / 12 CPUとGPUを使い分ける |
+
+**応用編** — 体系を閉じるための柱。関心のある章から独立して読めます
+
+| Part | 章 |
+| --- | --- |
+| IV CPUとメモリの深層 | 13 数の表現 / 14 仮想メモリとTLB / 15 キャッシュの内部構造 / 16 フロントエンドとtop-down分析 / 17 メモリモデルと並行データ構造 |
+| V Rustの深層 | 18 アロケータ / 19 asyncの実体 / 20 unsafeと未定義動作とFFI / 21 ビルドを極める / 22 データ構造の実性能 |
+| VI GPUの深層 | 23 カーネル最適化の体系 / 24 転送と実行の重ね合わせ / 25 行列エンジンと混合精度 / 26 GPUの計測 |
+| VII システムと実践 | 27 OSの層のコスト / 28 実践の性能工学(+知識の地図) |
+
+## リポジトリ構成
 
 ```
 src/content/docs/   # 本文 (MDX)
   cpu/              #   Part I   CPUを知る (1-5章)
   rust-opt/         #   Part II  Rustと最適化 (6-8章)
   gpu/              #   Part III GPUを知る (9-12章)
+  cpu-deep/         #   Part IV  CPUとメモリの深層 (13-17章)
+  rust-deep/        #   Part V   Rustの深層 (18-22章)
+  gpu-deep/         #   Part VI  GPUの深層 (23-26章)
+  systems/          #   Part VII システムと実践 (27-28章)
   appendix/         #   用語集・さらに学ぶには
-src/snippets/       # 実行可能なRustコード (表示・実行・コンパイル検証の単一ソース)
+src/snippets/       # 実行可能なRustコード (表示・実行・検証の単一ソース)
 src/components/     # RustPlay.astro (Playground実行コンポーネント)
-examples/           # ローカル実行用Cargoワークスペース (criterion / wgpu)
-scripts/play.sh     # スニペットをPlayground APIで実行するスクリプト
+examples/           # ローカル実行用Cargoワークスペース (wgpu / criterion / BLAS)
+scripts/play.sh     # スニペットをPlayground APIで実行・検証するスクリプト
 ```
 
 ## examples の実行
 
-GPUを使う章(11・12章)のコードはブラウザでは動かないため、
-ローカルで実行します。
+GPUやOSライブラリを使う章のコードはブラウザでは動かないため、
+ローカルで実行します(wgpu系はGPUのあるマシンが必要です)。
 
 ```sh
 cd examples
-cargo run --release -p ch11-vector-add     # wgpu ベクトル加算
-cargo run --release -p ch12-matmul         # 行列積 CPU 3方式 + GPU 3方式
-cargo bench -p ch08-bench                  # criterion ベンチ
+cargo run --release -p ch11-vector-add   # 11章: wgpu ベクトル加算
+cargo run --release -p ch12-matmul       # 12章: 行列積 CPU 3方式 + GPU 3方式
+cargo run --release -p ch23-reduction    # 23章: GPU reduction 3段階
+cargo run --release -p ch24-overlap      # 24章: 同期点の削減で2.7倍
+cargo run --release -p ch25-gemm-lib     # 25章: Accelerate(BLAS)との比較 (macOS専用)
+cargo run --release -p ch26-timestamp    # 26章: GPUタイムスタンプ計測
+cargo bench -p ch08-bench                # 8章: criterion ベンチ
 ```
 
 ## スニペットの検証
 
-`src/snippets/` 以下の全コードは `rustc --edition 2024` でコンパイルが通ります
-(`nightly-` プレフィックスのものは nightly)。
+`src/snippets/` のコードは表示・ブラウザ実行・検証の単一ソースです。
+
+- 標準ライブラリのみのスニペットは `rustc --edition 2024` で
+  そのままコンパイルできます(`nightly-` プレフィックスのものはnightly)
+- クレートやOSライブラリに依存するもの(rayon / tokio / libc)は、
+  Playground実行スクリプトで検証します
 
 ```sh
-for f in src/snippets/*/*.rs; do rustc --edition 2024 --crate-type bin -O -o /tmp/check "$f"; done
+# 標準ライブラリのみのスニペットのコンパイル検証
+for f in src/snippets/*/*.rs; do
+  rustc --edition 2024 --crate-type bin -O -o /tmp/check "$f" || echo "skip(要クレート): $f"
+done
+
+# Playground APIでの実行 (依存クレートつきのものもこちらで動く)
+bash scripts/play.sh src/snippets/ch05/rayon.rs release
 ```
