@@ -45,32 +45,33 @@ const root = h(
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    background: `linear-gradient(135deg, ${C.bg} 0%, #171a28 60%, #1b1430 100%)`,
-    color: C.text,
+    background: '#ffffff',
+    color: '#111111',
     fontFamily: 'Noto Sans JP',
     padding: 80,
-    gap: 36,
+    gap: 40,
   },
   h(
     'div',
     {
       display: 'flex',
       flexDirection: 'column',
-      fontSize: 92,
+      fontSize: 96,
       fontWeight: 700,
       lineHeight: 1.3,
     },
     h('div', { display: 'flex' }, 'Rustではじめる'),
-    h('div', { display: 'flex', color: C.indigo }, 'CPUとGPU')
+    h(
+      'div',
+      { display: 'flex' },
+      h('div', { display: 'flex', color: '#ff77aa' }, 'CPU'),
+      h('div', { display: 'flex' }, 'と'),
+      h('div', { display: 'flex', color: '#00a752' }, 'GPU')
+    )
   ),
   h(
     'div',
-    { display: 'flex', fontSize: 34, color: C.sub },
-    '実測でたどる、計算機の仕組みと最適化の教科書'
-  ),
-  h(
-    'div',
-    { display: 'flex', fontSize: 26, color: C.dim, marginTop: 20 },
+    { display: 'flex', fontSize: 26, color: '#8a8f9e', marginTop: 16 },
     'rust-cpu-gpu-book.void.app'
   )
 );
