@@ -22,6 +22,9 @@ sidebar:
   1対1に書き直した表現。[1章](/cpu/01-how-code-runs/)
 - **命令セット**(instruction set architecture、ISA) — CPUが受け付ける
   命令の種類と形式の取り決め。x86-64、ARM64など。[1章](/cpu/01-how-code-runs/)
+- **オペランド**(operand) — 命令が操作する対象。レジスタ、定数、
+  メモリ上の位置など。`add w0, w1, w0`ならw1とw0が入力、
+  先頭のw0が書き込み先のオペランド。[1章](/cpu/01-how-code-runs/)
 - **レジスタ**(register) — CPU内部にある少数・最速の記憶場所。
   計算は原則レジスタ上で行われる。[1章](/cpu/01-how-code-runs/)
 - **レジスタ割り付け**(register allocation) — どの変数をどのレジスタに
