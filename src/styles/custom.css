@@ -25,6 +25,13 @@
   font-size: var(--sl-text-sm);
 }
 
+/* Starlightが本文中の隣接要素に付けるmargin-topを打ち消す
+   (ボタン等がツールバー内で縦にずれるのを防ぐ) */
+.rust-play > *,
+.rust-play__toolbar > * {
+  margin-top: 0 !important;
+}
+
 .rust-play__toolbar .spacer {
   flex: 1;
 }
