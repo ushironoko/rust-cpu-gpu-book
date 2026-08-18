@@ -72,7 +72,7 @@ const root = h(
   h(
     'div',
     { display: 'flex', fontSize: 26, color: '#8a8f9e', marginTop: 16 },
-    'rust-cpu-gpu-book.void.app'
+    'ushironoko/rust-cpu-gpu-book'
   )
 );
 
