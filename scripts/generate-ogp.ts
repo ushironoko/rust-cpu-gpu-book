@@ -37,212 +37,41 @@ const h = (
   };
 };
 
-// CPUダイ: 大きな制御+演算のコア4つ + キャッシュ
-const cpuDie = () =>
-  h(
-    'div',
-    {
-      display: 'flex',
-      flexDirection: 'column',
-      background: C.panel,
-      border: `2px solid ${C.panelBorder}`,
-      borderRadius: 18,
-      padding: 20,
-      gap: 12,
-      width: 420,
-    },
-    h(
-      'div',
-      { display: 'flex', gap: 12 },
-      ...[0, 1].map(() =>
-        h(
-          'div',
-          { display: 'flex', gap: 8, flex: 1 },
-          h('div', {
-            width: 76,
-            height: 74,
-            background: `${C.orange}33`,
-            border: `2px solid ${C.orange}`,
-            borderRadius: 8,
-          }),
-          h('div', {
-            flex: 1,
-            height: 74,
-            background: `${C.indigo}2e`,
-            border: `2px solid ${C.indigo}`,
-            borderRadius: 8,
-          })
-        )
-      )
-    ),
-    h(
-      'div',
-      { display: 'flex', gap: 12 },
-      ...[0, 1].map(() =>
-        h(
-          'div',
-          { display: 'flex', gap: 8, flex: 1 },
-          h('div', {
-            width: 76,
-            height: 74,
-            background: `${C.orange}33`,
-            border: `2px solid ${C.orange}`,
-            borderRadius: 8,
-          }),
-          h('div', {
-            flex: 1,
-            height: 74,
-            background: `${C.indigo}2e`,
-            border: `2px solid ${C.indigo}`,
-            borderRadius: 8,
-          })
-        )
-      )
-    ),
-    h('div', {
-      height: 30,
-      background: `${C.dim}26`,
-      border: `2px solid ${C.dim}`,
-      borderRadius: 8,
-    }),
-    h(
-      'div',
-      { display: 'flex', color: C.sub, fontSize: 22, fontWeight: 700 },
-      'CPU — 少数の強力なコア'
-    )
-  );
-
-// GPUダイ: 細い制御 + 大量の小さな演算ユニット
-const gpuDie = () =>
-  h(
-    'div',
-    {
-      display: 'flex',
-      flexDirection: 'column',
-      background: C.panel,
-      border: `2px solid ${C.panelBorder}`,
-      borderRadius: 18,
-      padding: 20,
-      gap: 12,
-      width: 420,
-    },
-    h('div', {
-      height: 12,
-      background: `${C.orange}33`,
-      border: `2px solid ${C.orange}`,
-      borderRadius: 6,
-    }),
-    ...[0, 1, 2].map(() =>
-      h(
-        'div',
-        { display: 'flex', gap: 8 },
-        ...Array.from({ length: 9 }, () =>
-          h('div', {
-            width: 34,
-            height: 34,
-            background: `${C.indigo}2e`,
-            border: `2px solid ${C.indigo}`,
-            borderRadius: 6,
-          })
-        )
-      )
-    ),
-    h(
-      'div',
-      { display: 'flex', color: C.sub, fontSize: 22, fontWeight: 700 },
-      'GPU — 大量の小さな演算ユニット'
-    )
-  );
-
 const root = h(
   'div',
   {
     width: 1200,
     height: 630,
     display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
     background: `linear-gradient(135deg, ${C.bg} 0%, #171a28 60%, #1b1430 100%)`,
     color: C.text,
     fontFamily: 'Noto Sans JP',
-    padding: 56,
-    gap: 48,
-    alignItems: 'center',
+    padding: 80,
+    gap: 36,
   },
-  // 左: タイトル
   h(
     'div',
-    { display: 'flex', flexDirection: 'column', flex: 1, gap: 28 },
-    h(
-      'div',
-      { display: 'flex', gap: 12 },
-      h(
-        'div',
-        {
-          display: 'flex',
-          background: `${C.indigo}22`,
-          border: `2px solid ${C.indigo}`,
-          color: C.indigo,
-          borderRadius: 999,
-          padding: '6px 18px',
-          fontSize: 24,
-          fontWeight: 700,
-        },
-        '全28章'
-      ),
-      h(
-        'div',
-        {
-          display: 'flex',
-          background: `${C.orange}1f`,
-          border: `2px solid ${C.orange}`,
-          color: C.orange,
-          borderRadius: 999,
-          padding: '6px 18px',
-          fontSize: 24,
-          fontWeight: 700,
-        },
-        'ブラウザで実行できる実験つき'
-      )
-    ),
-    h(
-      'div',
-      {
-        display: 'flex',
-        flexDirection: 'column',
-        fontSize: 76,
-        fontWeight: 700,
-        lineHeight: 1.25,
-      },
-      h('div', { display: 'flex' }, 'Rustではじめる'),
-      h(
-        'div',
-        { display: 'flex', color: C.indigo },
-        'CPUとGPU'
-      )
-    ),
-    h(
-      'div',
-      {
-        display: 'flex',
-        flexDirection: 'column',
-        fontSize: 30,
-        color: C.sub,
-        lineHeight: 1.55,
-      },
-      h('div', { display: 'flex' }, '実測でたどる、'),
-      h('div', { display: 'flex' }, '計算機の仕組みと最適化の教科書')
-    ),
-    h(
-      'div',
-      { display: 'flex', fontSize: 24, color: C.dim, marginTop: 12 },
-      'rust-cpu-gpu-book.void.app'
-    )
+    {
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: 92,
+      fontWeight: 700,
+      lineHeight: 1.3,
+    },
+    h('div', { display: 'flex' }, 'Rustではじめる'),
+    h('div', { display: 'flex', color: C.indigo }, 'CPUとGPU')
   ),
-  // 右: CPU vs GPU ダイ
   h(
     'div',
-    { display: 'flex', flexDirection: 'column', gap: 24 },
-    cpuDie(),
-    gpuDie()
+    { display: 'flex', fontSize: 34, color: C.sub },
+    '実測でたどる、計算機の仕組みと最適化の教科書'
+  ),
+  h(
+    'div',
+    { display: 'flex', fontSize: 26, color: C.dim, marginTop: 20 },
+    'rust-cpu-gpu-book.void.app'
   )
 );
 
