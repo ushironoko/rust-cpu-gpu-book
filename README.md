@@ -7,7 +7,19 @@ Astro Starlight (MDX) 製のドキュメントサイトです。
 - 本文中のRustコードの多くは、ブラウザ上から
   [Rust Playground](https://play.rust-lang.org/) で**その場で実行・編集**できます
 - 図はmermaidとインラインSVG。本文の実測値は、すべて実際に
-  計測したものです(Rust Playground または Apple M4。環境は本文に明記)
+  計測したものです(後述の「実測環境」参照。どちらの環境かは本文に明記)
+
+## 実測環境
+
+本文の「筆者の実測」は、次の2つの環境で2026年8月に計測したものです。
+
+| 環境 | 主な用途 | 詳細 |
+| --- | --- | --- |
+| Rust Playground | ブラウザ実行可能なスニペット全般 | play.rust-lang.org の共有x86-64 Linux環境(2 vCPU、メモリ上限あり)。stableのreleaseビルドを基本とし、debug/nightlyを使う箇所は本文に明記。共有環境のため実行ごとに数十%ばらつく |
+| 手元のMac | wgpu/BLAS/criterionなどローカル実行のexamples | Apple M4 (CPU 10コア = P4+E6、GPU 10コア、ユニファイドメモリ32GB)、macOS 26.3、rustc 1.95.0、wgpu 30.0.0 |
+
+倍率や傾向は環境が変われば変わります(本文23章では、環境差で
+教科書の定石が覆る例も扱っています)。手元での再計測を推奨します。
 
 ## 読む
 
