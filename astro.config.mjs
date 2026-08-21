@@ -43,31 +43,31 @@ export default defineConfig({
       sidebar: [
         { label: 'はじめに', link: '/' },
         {
-          label: 'Part I — CPUを知る',
+          label: 'Part I: CPUを知る',
           items: [{ autogenerate: { directory: 'cpu' } }],
         },
         {
-          label: 'Part II — Rustと最適化',
+          label: 'Part II: Rustと最適化',
           items: [{ autogenerate: { directory: 'rust-opt' } }],
         },
         {
-          label: 'Part III — GPUを知る',
+          label: 'Part III: GPUを知る',
           items: [{ autogenerate: { directory: 'gpu' } }],
         },
         {
-          label: 'Part IV — CPUとメモリの深層',
+          label: 'Part IV: CPUとメモリの深層',
           items: [{ autogenerate: { directory: 'cpu-deep' } }],
         },
         {
-          label: 'Part V — Rustの深層',
+          label: 'Part V: Rustの深層',
           items: [{ autogenerate: { directory: 'rust-deep' } }],
         },
         {
-          label: 'Part VI — GPUの深層',
+          label: 'Part VI: GPUの深層',
           items: [{ autogenerate: { directory: 'gpu-deep' } }],
         },
         {
-          label: 'Part VII — システムと実践',
+          label: 'Part VII: システムと実践',
           items: [{ autogenerate: { directory: 'systems' } }],
         },
         { label: '付録', items: [{ autogenerate: { directory: 'appendix' } }] },
