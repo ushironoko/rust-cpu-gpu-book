@@ -21,7 +21,7 @@ fn reduce_atomic(
     }
 }
 
-// ---- v2: ワークグループ内で共有メモリの木で畳み、代表1つがatomicに足す ----
+// ---- v2: ワークグループ内で共有メモリ上のツリーで集約し、代表1スレッドがatomicに足す ----
 var<workgroup> partial: array<u32, 256>;
 
 @compute @workgroup_size(256)
@@ -37,7 +37,7 @@ fn reduce_shared(
     }
     partial[lid.x] = v;
     workgroupBarrier();
-    // 256 -> 128 -> 64 -> ... -> 1 と半分ずつ畳む
+    // 256 -> 128 -> 64 -> ... -> 1 と半分ずつ集約する
     var stride = 128u;
     while (stride > 0u) {
         if (lid.x < stride) {
@@ -51,7 +51,7 @@ fn reduce_shared(
     }
 }
 
-// ---- v3: まず各スレッドがレジスタ上で64要素を足し、それから木で畳む ----
+// ---- v3: まず各スレッドがレジスタ上で64要素を足し、それからツリーで集約する ----
 @compute @workgroup_size(256)
 fn reduce_multi(
     @builtin(workgroup_id) wgid: vec3<u32>,

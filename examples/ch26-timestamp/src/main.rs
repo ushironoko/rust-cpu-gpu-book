@@ -97,7 +97,7 @@ fn work(@builtin(workgroup_id) wgid: vec3<u32>, @builtin(local_invocation_id) li
         cache: None,
     });
 
-    // ---- タイムスタンプクエリの道具立て ----
+    // ---- タイムスタンプクエリの準備 ----
     // パスの開始と終了で「GPU自身の時計」を記録する
     let query_set = device.create_query_set(&wgpu::QuerySetDescriptor {
         label: None,
@@ -118,7 +118,7 @@ fn work(@builtin(workgroup_id) wgid: vec3<u32>, @builtin(local_invocation_id) li
     });
 
     let groups = ((N / 256).div_ceil(256)) as u32;
-    // (大きい仕事, 小さい仕事) それぞれで ウォームアップ1回 + 計測3回
+    // (大きい処理, 小さい処理) それぞれで ウォームアップ1回 + 計測3回
     for (label, gx, gy) in [("16M要素", 256u32, groups), ("256要素 ", 1, 1)] {
     for round in 0..4 {
         let wall = Instant::now();

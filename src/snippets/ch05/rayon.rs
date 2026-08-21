@@ -1,7 +1,7 @@
 use rayon::prelude::*;
 use std::time::Instant;
 
-// コラッツ数列: n が 1 になるまでの手数を数える(1要素あたりの仕事が重い例)
+// コラッツ数列: n が 1 になるまでの手数を数える(1要素あたりの計算量が大きい例)
 fn collatz_steps(mut n: u64) -> u64 {
     let mut steps = 0;
     while n != 1 {
