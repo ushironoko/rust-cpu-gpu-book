@@ -32,6 +32,12 @@ ok('aside markdown inside', (await page.locator('aside.book-aside strong, aside.
 
 await page.screenshot({ path: `${SHOT}/light-chapter.png`, fullPage: false });
 
+// --- 前後ページリンク ---
+const prevHref = await page.locator('.book-pager a[rel="prev"]').getAttribute('href').catch(() => null);
+const nextHref = await page.locator('.book-pager a[rel="next"]').getAttribute('href').catch(() => null);
+ok('pager prev', prevHref === '/gpu/12-cpu-vs-gpu/', String(prevHref));
+ok('pager next', nextHref === '/cpu-deep/14-virtual-memory/', String(nextHref));
+
 // --- 編集モード ---
 await play.locator('.rust-play__btn--edit').click();
 await page.waitForTimeout(200);
@@ -124,6 +130,8 @@ await page.screenshot({ path: `${SHOT}/mermaid.png` });
 await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
 ok('top page h1', (await page.textContent('article h1'))?.trim() === 'はじめに');
 ok('top rust-play', (await page.locator('.rust-play').count()) === 1);
+ok('top pager no-prev', (await page.locator('.book-pager a[rel="prev"]').count()) === 0);
+ok('top pager next', (await page.locator('.book-pager a[rel="next"]').getAttribute('href').catch(() => null)) === '/cpu/01-how-code-runs/');
 await page.screenshot({ path: `${SHOT}/top.png` });
 
 // --- モバイル ---

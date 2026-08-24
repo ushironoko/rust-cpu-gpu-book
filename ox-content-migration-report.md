@@ -150,7 +150,11 @@ Vue 等のフレームワーク依存は不要になった。
 - mermaid は `PUPPETEER_EXECUTABLE_PATH` で headless Chromium を指定すれば
   ビルド時に静的SVG化される。**mmdc が見つからない場合は警告のみで図が
   コードブロックのまま残る**ため、デプロイ時はビルドログの確認が必要
-- prev/next ページャは方針通り非搭載(テーマプリセット構成では実現不可のため)
+- prev/next ページャは `scripts/inject-pager.mjs` で実装した(2026-08-24 追加)。
+  カスタムJSXテーマはヘッダ・サイドバー・検索UIの全自作とプリセットCSSの
+  前提マークアップ喪失を招くため採用せず、**SSG完了後(closeBundle)に
+  生成HTMLへ静的なページャを注入する**方式にした。順序はサイドバー定義
+  (config/sidebar.mjs)と同一の単一情報源で、Starlight同様JS不要の静的HTML
 
 ## 調査方法
 

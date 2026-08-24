@@ -75,6 +75,7 @@ src/snippets/       # 実行可能なRustコード (表示・実行・検証の�
 src/theme/          # カスタムCSS / RustPlayクライアントJS / UI日本語化JS
 config/sidebar.mjs  # frontmatter からサイドバーを生成
 scripts/preprocess-docs.mjs  # :::note と <RustPlay> を展開して .ox-docs/ へ出力
+scripts/inject-pager.mjs     # ビルド後に前後ページリンクを静的HTMLへ注入
 examples/           # ローカル実行用Cargoワークスペース (wgpu / criterion / BLAS)
 scripts/play.sh     # スニペットをPlayground APIで実行・検証するスクリプト
 scripts/generate-ogp.ts  # OGP画像の生成 (satori + resvg、bun run ogp)

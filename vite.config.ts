@@ -8,6 +8,7 @@ import asm from 'shiki/langs/asm.mjs';
 import llvm from 'shiki/langs/llvm.mjs';
 import toml from 'shiki/langs/toml.mjs';
 import { preprocessDocs } from './scripts/preprocess-docs.mjs';
+import { injectPager } from './scripts/inject-pager.mjs';
 import { buildSidebar } from './config/sidebar.mjs';
 
 // docs/ を ox-content が読む .ox-docs/ へ展開する(:::note と RustPlay)。
@@ -35,6 +36,19 @@ function preprocessPlugin(): Plugin {
           }
         }, 100);
       });
+    },
+  };
+}
+
+// SSG完了後(closeBundleはプラグイン登録順に走る)に、生成HTMLへ
+// 前後ページリンクを注入する。ox-contentのプラグイン群より後ろに置くこと。
+function pagerPlugin(): Plugin {
+  return {
+    name: 'book:inject-pager',
+    apply: 'build',
+    closeBundle() {
+      const n = injectPager('dist');
+      console.log(`[inject-pager] injected into ${n} pages`);
     },
   };
 }
@@ -76,5 +90,6 @@ export default defineConfig({
         ],
       },
     }),
+    pagerPlugin(),
   ],
 });

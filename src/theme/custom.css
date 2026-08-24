@@ -203,6 +203,68 @@
   margin-bottom: 0;
 }
 
+/* ---- 前後ページリンク (scripts/inject-pager.mjs が注入) ---- */
+.book-pager {
+  display: flex;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--octc-color-border);
+}
+
+.book-pager__link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.book-pager__link:hover {
+  border-color: var(--octc-color-primary);
+}
+
+.book-pager__link--next {
+  text-align: right;
+}
+
+.book-pager__spacer {
+  flex: 1;
+}
+
+.book-pager__dir {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+
+.book-pager__title {
+  font-weight: 600;
+  color: var(--octc-color-text);
+  overflow-wrap: anywhere;
+}
+
+.book-pager__link:hover .book-pager__title {
+  color: var(--octc-color-primary);
+}
+
+@media (max-width: 640px) {
+  .book-pager {
+    flex-direction: column;
+  }
+
+  .book-pager__link--next {
+    text-align: left;
+  }
+
+  .book-pager__spacer {
+    display: none;
+  }
+}
+
 /* ---- 用語(初出)の強調 ---- */
 .term {
   font-weight: 600;
