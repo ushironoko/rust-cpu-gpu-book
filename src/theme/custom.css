@@ -255,6 +255,27 @@ body:not(.entry-page) .header {
   color: var(--sl-color-red);
 }
 
+/* RustPlayツールバーをモバイルで1行に収める。ボタンの余白とメタ情報の
+   フォントを詰めて「Playgroundで開く」のカラム落ちを防ぐ(320px級の
+   極端に狭い幅ではflex-wrapで折り返しに退避)。同一詳細度の上の基本
+   ルールを上書きするため、このセクションより後ろに置くこと。 */
+@media (max-width: 768px) {
+  .rust-play__toolbar {
+    gap: 0.4rem;
+    padding-inline: 0.5rem;
+  }
+
+  .rust-play__btn {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.8125rem;
+  }
+
+  .rust-play__meta,
+  .rust-play__link {
+    font-size: 0.7rem;
+  }
+}
+
 /* ---- Aside (旧 :::note) ---- */
 .book-aside {
   margin: 1rem 0;
