@@ -4,20 +4,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
     "deploy": "void deploy --dir dist",
-    "ogp": "bun run scripts/generate-ogp.ts"
+    "ogp": "bun run scripts/generate-ogp.ts",
+    "deploy:preview": "void deploy --project rust-cpu-gpu-book-preview --dir dist"
   },
   "dependencies": {
-    "@astrojs/starlight": "0.41.7",
-    "astro": "7.2.2",
-    "astro-mermaid": "2.1.0",
-    "mermaid": "11.16.1",
-    "sharp": "0.35.3"
+    "@ox-content/theme-color-github": "2.90.0",
+    "@ox-content/theme-holo": "2.90.0",
+    "@ox-content/vite-plugin": "2.90.0",
+    "shiki": "4.4.2",
+    "vite": "8.2.2"
   },
   "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.16.0",
     "@resvg/resvg-js": "2.6.2",
     "@types/react": "19.2.18",
     "satori": "0.29.0",
