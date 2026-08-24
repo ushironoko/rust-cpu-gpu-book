@@ -83,6 +83,18 @@ body:not(.entry-page) .header {
   .content table {
     overflow-x: auto;
   }
+
+  /* モバイルではページ遷移(cross-document view transition)の後に
+     ヘッダーの backdrop-filter が効かなくなる(WebKit系の挙動)。
+     ヘッダーを遷移スナップショット(view-transition-name)から外し、
+     スクロール連動のブラー導入アニメーション(octc-header-settle)も
+     使わず、ダイレクトアクセス時と同じ常時ブラーに固定する。 */
+  body:not(.entry-page) .header {
+    view-transition-name: none;
+    animation: none;
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
 }
 
 /* ---- RustPlay: インタラクティブ実行ブロック ---- */
@@ -367,6 +379,16 @@ body:not(.entry-page) .header {
 
 .content table > :last-child > tr:last-child > :last-child {
   border-end-end-radius: 11px;
+}
+
+/* ---- 本文の折り返しを通常の貪欲アルゴリズムに戻す ----
+   holoは本文に text-wrap:pretty を当てるが、Safariのpretty実装は
+   段落全体を最適化するため、和文では行末が大きく空く(折り返しが
+   早すぎるように見える)。既定の折り返しへ戻す。見出しのbalanceは
+   維持する。 */
+.content p,
+.content li {
+  text-wrap: wrap;
 }
 
 /* ---- 用語(初出)の強調 ---- */
