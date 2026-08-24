@@ -122,6 +122,8 @@ body:not(.entry-page) .header {
 
 .rust-play__toolbar {
   display: flex;
+  /* 幅が足りないときはボタンのラベルを縦に折らず、行ごと折り返す */
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.6rem;
@@ -143,6 +145,8 @@ body:not(.entry-page) .header {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  white-space: nowrap;
+  flex-shrink: 0;
   padding: 0.25rem 0.75rem;
   border: 1px solid var(--sl-color-gray-4);
   border-radius: 0.35rem;
@@ -172,12 +176,14 @@ body:not(.entry-page) .header {
 .rust-play__meta {
   color: var(--sl-color-gray-3);
   font-size: var(--sl-text-xs);
+  white-space: nowrap;
 }
 
 .rust-play__link {
   font-size: var(--sl-text-xs);
   color: var(--sl-color-gray-3);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .rust-play__link:hover {
