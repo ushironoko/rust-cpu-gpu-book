@@ -1,6 +1,6 @@
 # build output
 dist/
-.astro/
+.ox-docs/
 
 # dependencies
 node_modules/
@@ -18,3 +18,4 @@ plans/
 # misc
 .DS_Store
 *.log
+.e2e-shots/

@@ -1,7 +1,7 @@
 # RustではじめるCPUとGPU
 
 Webアプリケーション開発者のための、RustでたどるCPU・GPUの教科書。
-Astro Starlight (MDX) 製のドキュメントサイトです。
+[ox-content](https://ox-content.void.app/) 製のドキュメントサイトです。
 
 **📖 公開サイト: https://rust-cpu-gpu-book.void.app**
 
@@ -30,10 +30,14 @@ Astro Starlight (MDX) 製のドキュメントサイトです。
 
 ```sh
 bun install
-bun run dev      # 開発サーバ (http://localhost:4321)
+bun run dev      # 開発サーバ (http://localhost:5173)
 bun run build    # dist/ へ静的ビルド
 bun run preview  # ビルド結果の確認
 bun run deploy   # void で Cloudflare Workers へデプロイ
+
+# mermaid図のビルドには headless Chromium が必要です。
+# ブラウザが自動検出できない環境では実行ファイルを指定してください:
+#   PUPPETEER_EXECUTABLE_PATH=/path/to/chromium bun run build
 ```
 
 ## 目次
@@ -58,7 +62,7 @@ bun run deploy   # void で Cloudflare Workers へデプロイ
 ## リポジトリ構成
 
 ```
-src/content/docs/   # 本文 (MDX)
+docs/               # 本文 (Markdown)
   cpu/              #   Part I   CPUを知る (1-5章)
   rust-opt/         #   Part II  Rustと最適化 (6-8章)
   gpu/              #   Part III GPUを知る (9-12章)
@@ -68,7 +72,9 @@ src/content/docs/   # 本文 (MDX)
   systems/          #   Part VII システムと実践 (27-28章)
   appendix/         #   用語集・さらに学ぶには
 src/snippets/       # 実行可能なRustコード (表示・実行・検証の単一ソース)
-src/components/     # RustPlay.astro (Playground実行コンポーネント)
+src/theme/          # カスタムCSS / RustPlayクライアントJS / UI日本語化JS
+config/sidebar.mjs  # frontmatter からサイドバーを生成
+scripts/preprocess-docs.mjs  # :::note と <RustPlay> を展開して .ox-docs/ へ出力
 examples/           # ローカル実行用Cargoワークスペース (wgpu / criterion / BLAS)
 scripts/play.sh     # スニペットをPlayground APIで実行・検証するスクリプト
 scripts/generate-ogp.ts  # OGP画像の生成 (satori + resvg、bun run ogp)

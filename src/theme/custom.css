@@ -1,0 +1,226 @@
+/* ---- Starlight 互換のCSS変数レイヤー ----
+   本文中の手書きSVG図(7ページ・38箇所)は var(--sl-color-*) を参照して
+   いるため、コンテンツを書き換えずに ox-content のテーマ変数(--octc-*)
+   へ橋渡しする。--octc-* はライト/ダークで値ごと切り替わるので、
+   ここでの割り当てだけで両テーマに追従する。
+   グレースケール(gray-1〜7)は Starlight の「テキスト色→背景色」の
+   段階を color-mix で再現する。 */
+:root {
+  --sl-color-white: var(--octc-color-text);
+  --sl-color-black: var(--octc-color-bg);
+  --sl-color-gray-1: color-mix(in srgb, var(--octc-color-text) 90%, var(--octc-color-bg));
+  --sl-color-gray-2: color-mix(in srgb, var(--octc-color-text) 76%, var(--octc-color-bg));
+  --sl-color-gray-3: color-mix(in srgb, var(--octc-color-text) 55%, var(--octc-color-bg));
+  --sl-color-gray-4: color-mix(in srgb, var(--octc-color-text) 35%, var(--octc-color-bg));
+  --sl-color-gray-5: color-mix(in srgb, var(--octc-color-text) 22%, var(--octc-color-bg));
+  --sl-color-gray-6: color-mix(in srgb, var(--octc-color-text) 12%, var(--octc-color-bg));
+  --sl-color-gray-7: color-mix(in srgb, var(--octc-color-text) 6%, var(--octc-color-bg));
+  --sl-color-accent: var(--octc-color-primary);
+  --sl-color-accent-high: var(--octc-color-primary-hover, var(--octc-color-primary));
+  --sl-color-accent-low: color-mix(in srgb, var(--octc-color-primary) 22%, var(--octc-color-bg));
+  --sl-color-orange: #b06000;
+  --sl-color-orange-low: color-mix(in srgb, #b06000 18%, var(--octc-color-bg));
+  --sl-color-red: #d02f4c;
+  --sl-text-sm: 0.875rem;
+  --sl-text-xs: 0.8125rem;
+  --__sl-font-mono: var(--octc-font-mono, ui-monospace, monospace);
+}
+
+:root[data-theme='dark'] {
+  --sl-color-orange: #e0af68;
+  --sl-color-red: #f7768e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sl-color-orange: #e0af68;
+    --sl-color-red: #f7768e;
+  }
+}
+
+/* ---- RustPlay: インタラクティブ実行ブロック ---- */
+.rust-play {
+  margin: 1rem 0;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rust-play__title {
+  padding: 0.4rem 1rem 0.35rem;
+  border-bottom: 1px solid var(--octc-color-border);
+  background: var(--sl-color-gray-6);
+  color: var(--octc-color-text);
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+}
+
+.rust-play__code pre {
+  border-radius: 0;
+  border: none;
+  margin: 0;
+}
+
+.rust-play__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--sl-color-gray-6);
+  font-size: var(--sl-text-sm);
+}
+
+.rust-play__toolbar > *,
+.rust-play > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.rust-play__toolbar .spacer {
+  flex: 1;
+}
+
+.rust-play__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 0.35rem;
+  background: var(--octc-color-bg);
+  color: var(--octc-color-text);
+  font-size: var(--sl-text-sm);
+  cursor: pointer;
+}
+
+.rust-play__btn:hover {
+  border-color: var(--octc-color-primary);
+}
+
+.rust-play__btn--run {
+  background: var(--sl-color-accent-low);
+  border-color: var(--octc-color-primary);
+}
+
+.rust-play__btn[disabled] {
+  cursor: wait;
+}
+
+.rust-play__btn[hidden] {
+  display: none;
+}
+
+.rust-play__meta {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-xs);
+}
+
+.rust-play__link {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+  text-decoration: none;
+}
+
+.rust-play__link:hover {
+  color: var(--sl-color-accent-high);
+}
+
+.rust-play__editor {
+  display: none;
+  width: 100%;
+  min-height: 12rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  resize: vertical;
+  background: var(--octc-color-code-bg, var(--sl-color-gray-7));
+  color: var(--octc-color-code-text, var(--octc-color-text));
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+  line-height: 1.65;
+  tab-size: 4;
+}
+
+.rust-play.is-editing .rust-play__editor {
+  display: block;
+}
+
+.rust-play.is-editing .rust-play__code {
+  display: none;
+}
+
+.rust-play__output {
+  display: none;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-top: 1px solid var(--octc-color-border);
+  border-radius: 0;
+  background: var(--octc-color-code-bg, var(--sl-color-gray-7));
+  color: var(--sl-color-gray-2);
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.rust-play__output.is-visible {
+  display: block;
+}
+
+.rust-play__output .stderr {
+  color: var(--sl-color-orange);
+}
+
+.rust-play__output .error {
+  color: var(--sl-color-red);
+}
+
+/* ---- Aside (旧 :::note) ---- */
+.book-aside {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border-inline-start: 3px solid var(--octc-color-primary);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--octc-color-primary) 9%, var(--octc-color-bg));
+  color: var(--octc-color-text);
+}
+
+.book-aside__title {
+  margin: 0 0 0.4rem;
+  font-size: var(--sl-text-sm);
+  font-weight: 700;
+  color: var(--octc-color-primary);
+}
+
+.book-aside__content > :first-child {
+  margin-top: 0;
+}
+
+.book-aside__content > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---- 用語(初出)の強調 ---- */
+.term {
+  font-weight: 600;
+}
+
+/* ---- 手書きSVG図のテーマ対応 ---- */
+.book-figure {
+  margin: 1.5rem auto;
+  text-align: center;
+}
+
+.book-figure svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.book-figure figcaption {
+  margin-top: 0.5rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}

@@ -1,12 +1,13 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@components/*": ["src/components/*"],
-      "@snippets/*": ["src/snippets/*"]
-    }
-  }
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "allowJs": true,
+    "noEmit": true
+  },
+  "include": ["vite.config.ts", "config", "scripts", "src/theme"]
 }
