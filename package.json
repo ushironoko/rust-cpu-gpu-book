@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "void deploy --dir dist",
-    "ogp": "bun run scripts/generate-ogp.ts"
+    "ogp": "bun run scripts/generate-ogp.ts",
+    "deploy:preview": "void deploy --project rust-cpu-gpu-book-preview --dir dist"
   },
   "dependencies": {
     "@ox-content/theme-color-github": "2.90.0",
