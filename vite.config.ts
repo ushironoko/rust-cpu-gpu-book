@@ -9,6 +9,7 @@ import llvm from 'shiki/langs/llvm.mjs';
 import toml from 'shiki/langs/toml.mjs';
 import { preprocessDocs } from './scripts/preprocess-docs.mjs';
 import { injectPager } from './scripts/inject-pager.mjs';
+import { verifyBuild } from './scripts/verify-build.mjs';
 import { buildSidebar } from './config/sidebar.mjs';
 
 // docs/ を ox-content が読む .ox-docs/ へ展開する(:::note と RustPlay)。
@@ -49,6 +50,12 @@ function pagerPlugin(): Plugin {
     closeBundle() {
       const n = injectPager('dist');
       console.log(`[inject-pager] injected into ${n} pages`);
+      // mermaid のサイレントフォールバック(mmdc欠如時に図がコードブロックの
+      // まま残る)を検出したらビルドを失敗させる
+      const v = verifyBuild('dist');
+      console.log(
+        `[verify-build] OK: ${v.pages} pages, ${v.mermaid} mermaid diagrams rendered`
+      );
     },
   };
 }

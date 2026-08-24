@@ -148,8 +148,9 @@ Vue 等のフレームワーク依存は不要になった。
 - frontmatter title は本文h1として描画されないため、プリプロセッサで
   `# タイトル` を先頭に注入
 - mermaid は `PUPPETEER_EXECUTABLE_PATH` で headless Chromium を指定すれば
-  ビルド時に静的SVG化される。**mmdc が見つからない場合は警告のみで図が
-  コードブロックのまま残る**ため、デプロイ時はビルドログの確認が必要
+  ビルド時に静的SVG化される。mmdc 欠如時のサイレントフォールバック(警告のみで
+  図がコードブロックのまま残る)は `scripts/verify-build.mjs` が検出し、
+  **1図でも未レンダリングならビルドを失敗させる**(closeBundle で自動実行)
 - prev/next ページャは `scripts/inject-pager.mjs` で実装した(2026-08-24 追加)。
   カスタムJSXテーマはヘッダ・サイドバー・検索UIの全自作とプリセットCSSの
   前提マークアップ喪失を招くため採用せず、**SSG完了後(closeBundle)に

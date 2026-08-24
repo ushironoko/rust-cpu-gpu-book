@@ -38,6 +38,8 @@ bun run deploy   # void で Cloudflare Workers へデプロイ
 # mermaid図のビルドには headless Chromium が必要です。
 # ブラウザが自動検出できない環境では実行ファイルを指定してください:
 #   PUPPETEER_EXECUTABLE_PATH=/path/to/chromium bun run build
+# mermaid図が1つでもレンダリングされないとビルドは失敗します
+# (scripts/verify-build.mjs がビルド後に自動検証。単体実行も可)
 ```
 
 ## 目次
