@@ -71,6 +71,18 @@ body:not(.entry-page) .header {
     top: auto;
     padding-top: 1.5rem;
   }
+
+  /* ベーステーマの左右padding(0.5rem、480px以下は0.4rem)は本文が
+     画面端に張り付いて窮屈なので少し広げる。 */
+  .main {
+    padding-inline: 1rem;
+  }
+
+  /* holoの overflow:hidden がベースの overflow-x:auto を潰し、幅広
+     テーブルを横スクロールできなくなるため戻す。 */
+  .content table {
+    overflow-x: auto;
+  }
 }
 
 /* ---- RustPlay: インタラクティブ実行ブロック ---- */
@@ -188,7 +200,6 @@ body:not(.entry-page) .header {
   margin: 0;
   padding: 0.75rem 1rem;
   border: none;
-  border-top: 1px solid var(--octc-color-border);
   border-radius: 0;
   background: var(--octc-color-code-bg, var(--sl-color-gray-7));
   color: var(--sl-color-gray-2);
@@ -199,6 +210,19 @@ body:not(.entry-page) .header {
   overflow-wrap: anywhere;
   max-height: 24rem;
   overflow-y: auto;
+}
+
+/* holoスキンは .content pre (詳細度0,1,1) に箔ボーダー(border-box背景の
+   background!important)と丸角を当てるため、.rust-play__output (0,1,0)の
+   border:none だけでは打ち消せない。詳細度を上げてフラット表示にする。
+   display は上のブロックに残す(.is-visible の切り替えを壊さないため)。 */
+.content pre.rust-play__output {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0;
+  background: var(--octc-color-code-bg, var(--sl-color-gray-7)) !important;
+  box-shadow: none;
 }
 
 .rust-play__output.is-visible {
@@ -217,7 +241,6 @@ body:not(.entry-page) .header {
 .book-aside {
   margin: 1rem 0;
   padding: 0.9rem 1rem;
-  border-inline-start: 3px solid var(--octc-color-primary);
   border-radius: 0.25rem;
   background: color-mix(in srgb, var(--octc-color-primary) 9%, var(--octc-color-bg));
   color: var(--octc-color-text);
@@ -298,6 +321,52 @@ body:not(.entry-page) .header {
   .book-pager__spacer {
     display: none;
   }
+}
+
+/* ---- テーブルの角丸整合 ----
+   holoは .content table に border-radius:12px + overflow:hidden を当てる
+   が、ベースはセル個別ボーダーの border-collapse:collapse のため、角で
+   セルのボーダーと背景が斜めに切れて見える。外周ボーダーをtable本体に
+   持たせ、セルは内側の区切り線のみとし、コーナーセルへ外周と揃う丸みを
+   与える。 */
+.content table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 12px;
+}
+
+.content th,
+.content td {
+  border: 0;
+  border-block-end: 1px solid var(--octc-color-border);
+  border-inline-end: 1px solid var(--octc-color-border);
+}
+
+/* 最終列・最終行の区切り線は外周ボーダーと二重になるため消す */
+.content table tr > :last-child {
+  border-inline-end: 0;
+}
+
+.content table > :last-child > tr:last-child > * {
+  border-block-end: 0;
+}
+
+/* 外周半径12pxからボーダー1px分を引いた丸みをコーナーセルへ */
+.content table > :first-child > tr:first-child > :first-child {
+  border-start-start-radius: 11px;
+}
+
+.content table > :first-child > tr:first-child > :last-child {
+  border-start-end-radius: 11px;
+}
+
+.content table > :last-child > tr:last-child > :first-child {
+  border-end-start-radius: 11px;
+}
+
+.content table > :last-child > tr:last-child > :last-child {
+  border-end-end-radius: 11px;
 }
 
 /* ---- 用語(初出)の強調 ---- */
