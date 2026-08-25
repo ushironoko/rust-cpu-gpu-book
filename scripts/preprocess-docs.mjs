@@ -57,7 +57,10 @@ function expandAsides(src, file) {
 }
 
 function expandRustPlay(src, file) {
-  return src.replace(/^<RustPlay\s+([^>]*?)\/>\s*$/gm, (whole, attrText) => {
+  // 行末マッチに \s*$ を使うと直後の空行(改行)まで食ってしまい、
+  // 生成した閉じ</div>と次の段落が隣接して段落がHTMLブロックに
+  // 吸い込まれる(**強調**等が処理されなくなる)。行内の空白のみ許容。
+  return src.replace(/^<RustPlay\s+([^>]*?)\/>[ \t]*$/gm, (whole, attrText) => {
     const attrs = {};
     for (const am of attrText.matchAll(/(\w+)="([^"]*)"/g)) attrs[am[1]] = am[2];
     const { snippet, title, channel = 'stable', mode = 'debug', edition = '2024' } = attrs;
@@ -66,7 +69,9 @@ function expandRustPlay(src, file) {
     const code = readFileSync(path, 'utf8').replace(/\n+$/, '\n');
     const playgroundUrl = `https://play.rust-lang.org/?version=${channel}&mode=${mode}&edition=${edition}&code=${encodeURIComponent(code)}`;
     const fence = '`````';
+    // 前後の空行はHTMLブロックを前後の段落から確実に切り離すための保険
     return [
+      '',
       `<div class="rust-play" data-channel="${channel}" data-mode="${mode}" data-edition="${edition}">`,
       `<div class="rust-play__code">`,
       title ? `<div class="rust-play__title">${escapeHtml(title)}</div>` : null,
@@ -88,6 +93,7 @@ function expandRustPlay(src, file) {
       `</div>`,
       `<pre class="rust-play__output" aria-live="polite" hidden></pre>`,
       `</div>`,
+      '',
     ]
       .filter((l) => l !== null)
       .join('\n');
