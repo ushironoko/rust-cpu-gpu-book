@@ -148,7 +148,13 @@ ox-code-play {
 
 /* ---- Aside (:::note → v3 containers) ----
    枠・ティント・タイトルは ssg.css の .ox-container が描画する。
-   日本語ラベル「ノート」向けにタイトルの字詰めだけ調整する。 */
+   デフォルトの左ボーダー(3px)は角丸に巻き込まれて曲がって見えるため、
+   旧 :::note 実装と同じくボーダー無しのティント箱にする。
+   日本語ラベル「ノート」向けにタイトルの字詰めも調整する。 */
+.content .ox-container {
+  border-left: none;
+}
+
 .content .ox-container-title {
   font-size: var(--sl-text-sm);
   letter-spacing: 0.02em;
