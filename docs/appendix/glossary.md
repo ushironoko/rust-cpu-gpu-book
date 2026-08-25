@@ -128,6 +128,10 @@ sidebar:
 - **アトミック操作**(atomic operation): 途中に割り込まれない読み書き。[5章](/cpu/05-multicore/)
 - **メモリオーダリング**(memory ordering): アトミック操作の前後で、
   他の読み書きの順序をどこまで保証するかの指定。[5章](/cpu/05-multicore/)
+- **Relaxed/Acquire/Release/SeqCst**: Rustの`Ordering`の指定レベル。
+  Relaxedは操作の不可分性のみ、Acquire/Releaseはフラグ以前の書き込みの
+  可視性(スレッド間の順序)、SeqCstは全スレッドで一致する単一の順序を
+  保証する。[5章](/cpu/05-multicore/)・[17章](/cpu-deep/17-memory-model/)
 - **データ並列**(data parallelism): 大量の要素それぞれに独立な計算を
   する形の並列性。[5章](/cpu/05-multicore/)
 - **ワークスティーリング**(work stealing): 待機状態になったスレッドが
@@ -180,6 +184,9 @@ sidebar:
 
 - **ベンチマーク**(benchmark): 処理単体の実行時間を統計的に測ること。
   Rustではcriterionが定番。[8章](/rust-opt/08-measure/)
+- **ウォームアップ**(warm-up): 計測前に対象を数回実行し、初回だけ発生する
+  コスト(キャッシュミス、ページフォールトなど)を測定から除くこと。
+  criterionは自動で行う。[8章](/rust-opt/08-measure/)・[14章](/cpu-deep/14-virtual-memory/)
 - **プロファイラ**(profiler): プログラム全体のどこで時間が使われて
   いるかを標本化で調べるツール。[8章](/rust-opt/08-measure/)
 - **フレームグラフ**(flame graph): プロファイル結果の可視化。横幅が
@@ -234,14 +241,23 @@ sidebar:
 - **オーバーフロー**(overflow): 演算結果が型の表現範囲を超えること。
   Rustではdebugビルドで検査、releaseは既定で回り込み(設定で変更可)。[13章](/cpu-deep/13-numbers/)
 - **IEEE 754**: 浮動小数点数の標準。±(1.仮数)×2^指数の2進表現。[13章](/cpu-deep/13-numbers/)
+- **丸め誤差**(rounding error): 実数を有限桁の仮数に丸めることで生じる
+  誤差。大きな値への加算では小さい側の下位桁が失われ、総和では蓄積する。[13章](/cpu-deep/13-numbers/)
 - **Kahanの総和**(Kahan summation): 加算で失われた丸め誤差を
   補正変数に保持し、次の加算で加え戻す総和アルゴリズム。[13章](/cpu-deep/13-numbers/)
+- **無限大**(`inf`)/**符号つきゼロ**(signed zero): IEEE 754の特殊値。
+  オーバーフローや`1.0/0.0`は無限大となり計算を続行する。`0.0`と`-0.0`は
+  等しく比較されるが、`1.0/x`の結果は`inf`と`-inf`に分かれる。[13章](/cpu-deep/13-numbers/)
 - **NaN**(not a number): 不正な演算の結果を表す特殊値。
   自分自身とも等しくない。ソートには`total_cmp`。[13章](/cpu-deep/13-numbers/)
 - **非正規化数**(subnormal): 最小の正規化数より小さい値を、精度を下げて
   表す仕組み。演算速度はハードウェア依存。[13章](/cpu-deep/13-numbers/)
+- **f16**(half): 符号1+指数5+仮数10ビットの16ビット浮動小数点形式。
+  範囲は±65504、10進で約3桁。[13章](/cpu-deep/13-numbers/)
 - **bf16**(bfloat16): f32の上位16ビットを切り出した形式。指数幅が
   f32と同じため値の範囲が変わらない。現在の機械学習計算で主に使われる。[13章](/cpu-deep/13-numbers/)
+- **混合精度**(mixed precision): 積の入力はf16/bf16などの狭い型、
+  累積はf32などの広い型で行う計算方式。行列エンジンの標準的な動作。[25章](/gpu-deep/25-matrix-engines/)
 - **量子化**(quantization): 重みなどをint8/int4等の狭い表現に
   変換して格納する技法。[25章](/gpu-deep/25-matrix-engines/)
 
@@ -272,6 +288,8 @@ sidebar:
   瞬間に複製する技法。[14章](/cpu-deep/14-virtual-memory/)
 - **mmap**(memory map): ファイルを仮想アドレス空間に対応づける
   システムコール。[14章](/cpu-deep/14-virtual-memory/)・[27章](/systems/27-os-layer/)
+- **ストライド**(stride): 配列アクセスの要素間隔。2のべき乗ストライドは
+  アドレスが特定セットに集中し、競合性ミスで大幅に遅くなる。[15章](/cpu-deep/15-cache-internals/)
 - **セットアソシアティブ**(set-associative): キャッシュの配置方式。
   アドレスで決まるセットの中の任意のウェイに置く。[15章](/cpu-deep/15-cache-internals/)
 - **セット/ウェイ/タグ**(set/way/tag): キャッシュの区画・区画内の枠・
@@ -292,6 +310,11 @@ sidebar:
   実行側。どちらか遅い方が律速する。[16章](/cpu-deep/16-frontend/)
 - **μop**(micro-operation): CPU内部の固定形式命令。x86の可変長命令は
   デコードでμopに分解される。[16章](/cpu-deep/16-frontend/)
+- **μopキャッシュ**(μop cache): デコード済みのμopを保持する専用
+  キャッシュ。小さなホットループはデコードを省略して実行できる。[16章](/cpu-deep/16-frontend/)
+- **命令キャッシュ**(L1i)/**iTLB**: 命令用のキャッシュとTLB。命令も
+  メモリ上のデータであり、データと同様にキャッシュとアドレス変換を通って
+  供給される。[16章](/cpu-deep/16-frontend/)
 - **BTB**(branch target buffer): 分岐の行き先アドレスを記録する表。
   間接分岐の予測に使う。[16章](/cpu-deep/16-frontend/)
 - **間接分岐**(indirect branch): 飛び先がレジスタ値で決まる分岐。
@@ -311,6 +334,8 @@ sidebar:
   他のコアが同じ場所に書き込んでいたら書き込みを失敗させる、
   ARMなどのアトミック操作の実装方式。[17章](/cpu-deep/17-memory-model/)
 - **ABA問題**: 値がA→B→Aと戻ったためCASが変更を検出できない問題。[17章](/cpu-deep/17-memory-model/)
+- **ロックフリー**(lock-free): ロックを使わず、CASのリトライループで
+  更新を進める並行データ構造の設計。Treiberスタックが基本例。[17章](/cpu-deep/17-memory-model/)
 - **エポックベース回収**(epoch-based reclamation): ロックフリー構造の
   メモリを世代管理で安全に解放する方式。crossbeamが実装。[17章](/cpu-deep/17-memory-model/)
 
@@ -342,6 +367,11 @@ sidebar:
 - **BOLT**: リンク済みバイナリを実行プロファイルで並べ替える最適化ツール。[21章](/rust-deep/21-build-control/)
 - **SwissTable**: Rustの`HashMap`の実装方式。制御バイト配列を
   SIMDで探査する。[22章](/rust-deep/22-data-structures/)
+- **負荷率**(load factor)/**リハッシュ**(rehash): ハッシュ表の埋まっている
+  スロットの割合と、それが上限を超えたとき表を2倍の大きさで作り直す
+  処理。[22章](/rust-deep/22-data-structures/)
+- **SipHash**: Rustの`HashMap`が既定で使うハッシュ関数。HashDoSへの
+  耐性を持つ暗号学的設計で、整数などの短いキーには計算量が過剰。[22章](/rust-deep/22-data-structures/)
 - **HashDoS**: 衝突するキーを大量に送ってハッシュ表をO(n)に退化させる
   攻撃。既定のSipHashはこれへの耐性を持つ。[22章](/rust-deep/22-data-structures/)
 - **インターニング**(interning): 同じ値を1か所に登録し整数IDで参照する
@@ -372,6 +402,9 @@ sidebar:
 
 ## システムと実践(応用編)
 
+- **ユーザー空間/カーネル空間**(user space / kernel space): アプリケーションが
+  動く領域とカーネルが動く領域。CPUの特権レベル機構で分離され、境界を
+  越える手段がシステムコール。[27章](/systems/27-os-layer/)
 - **システムコール**(system call): カーネルの機能を特権モードで実行するための要求。
   本書のPlayground実測では通常の関数呼び出しの100倍超のコスト。[27章](/systems/27-os-layer/)
 - **コンテキストスイッチ**(context switch): スレッド/プロセスの切り替え。
@@ -384,6 +417,8 @@ sidebar:
   減らすLinuxのI/O機構。[27章](/systems/27-os-layer/)
 - **パーセンタイル**(percentile): 分布の位置を示す統計量。p99は
   「100回に1回の遅さ」。レイテンシは平均でなく分布で評価する。[28章](/systems/28-performance-engineering/)
+- **SLO**(service level objective): サービスが守る性能・可用性の目標。
+  ファンアウトの大きなシステムではp99などのパーセンタイルで定義される。[28章](/systems/28-performance-engineering/)
 - **協調的省略**(coordinated omission): 応答を待ってから次を送る計測が、
   遅い期間のサンプルを記録せずp99を過小評価する計測上の誤り。[28章](/systems/28-performance-engineering/)
 - **ノイジーネイバー**(noisy neighbor): 同じ物理ホスト上の他のテナントと
