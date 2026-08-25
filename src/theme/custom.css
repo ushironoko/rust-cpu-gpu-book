@@ -319,10 +319,17 @@ body:not(.entry-page) .header {
   border-radius: 0.5rem;
   text-decoration: none;
   min-width: 0;
+  transition:
+    background-color var(--octc-motion-fast) var(--octc-motion-ease),
+    transform var(--octc-motion-base) var(--octc-motion-spring);
 }
 
+/* ホバーはサイドメニュー/目次と同じ仕様(背景ティント+右シフト)。
+   ボーダー色や文字色は変えない。 */
 .book-pager__link:hover {
-  border-color: var(--octc-color-primary);
+  background: color-mix(in srgb, var(--octc-accent-c, var(--octc-color-primary)) 14%, transparent);
+  transform: translateX(3px);
+  text-decoration: none;
 }
 
 .book-pager__link--next {
@@ -342,10 +349,6 @@ body:not(.entry-page) .header {
   font-weight: 600;
   color: var(--octc-color-text);
   overflow-wrap: anywhere;
-}
-
-.book-pager__link:hover .book-pager__title {
-  color: var(--octc-color-primary);
 }
 
 @media (max-width: 640px) {
