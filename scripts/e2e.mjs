@@ -11,6 +11,14 @@ const ok = (name, cond, extra = '') => {
   results.push(`${cond ? 'PASS' : 'FAIL'} ${name}${extra ? ' — ' + extra : ''}`);
 };
 
+// ページ内 idx 番目の code-play widget の payload(base64 JSON)を読む
+const playConfig = (page, idx) =>
+  page.evaluate((i) => {
+    const el = document.querySelectorAll('ox-code-play')[i];
+    if (!el) return null;
+    return JSON.parse(atob(el.getAttribute('data-ox-code-play'))).config;
+  }, idx);
+
 mkdirSync(SHOT, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.E2E_CHROMIUM ?? '/opt/pw-browsers/chromium' });
 const page = await browser.newPage({ viewport: { width: 1360, height: 900 } });
@@ -24,43 +32,41 @@ ok('h1 title', (await page.textContent('article h1'))?.trim() === '数の表現'
 ok('sidebar group', (await page.textContent('.sidebar'))?.includes('Part IV: CPUとメモリの深層'));
 ok('sidebar label', (await page.textContent('.sidebar'))?.includes('13. 数の表現'));
 ok('toc localized', (await page.textContent('.toc-title'))?.trim() === '目次');
-const play = page.locator('.rust-play').first();
-ok('rust-play count', (await page.locator('.rust-play').count()) === 5, String(await page.locator('.rust-play').count()));
-ok('rust-play shiki', (await play.locator('pre.shiki').count()) === 1);
-ok('aside rendered', (await page.locator('aside.book-aside').count()) > 0, String(await page.locator('aside.book-aside').count()));
-ok('aside markdown inside', (await page.locator('aside.book-aside strong, aside.book-aside code, aside.book-aside a, aside.book-aside p').count()) > 0);
+const play = page.locator('ox-code-play').first();
+ok('code-play count', (await page.locator('ox-code-play').count()) === 5, String(await page.locator('ox-code-play').count()));
+ok('code-play shiki', (await play.locator('pre.shiki').count()) === 1);
+ok('aside rendered', (await page.locator('.ox-container--note').count()) > 0, String(await page.locator('.ox-container--note').count()));
+ok('aside markdown inside', (await page.locator('.ox-container--note strong, .ox-container--note code, .ox-container--note a, .ox-container--note p').count()) > 0);
 
 await page.screenshot({ path: `${SHOT}/light-chapter.png`, fullPage: false });
 
-// --- 前後ページリンク ---
-const prevHref = await page.locator('.book-pager a[rel="prev"]').getAttribute('href').catch(() => null);
-const nextHref = await page.locator('.book-pager a[rel="next"]').getAttribute('href').catch(() => null);
-ok('pager prev', prevHref === '/gpu/12-cpu-vs-gpu/', String(prevHref));
-ok('pager next', nextHref === '/cpu-deep/14-virtual-memory/', String(nextHref));
+// --- 前後ページリンク (v3 ssg.pagination) ---
+const prevHref = await page.locator('.pager a[rel="prev"]').getAttribute('href').catch(() => null);
+const nextHref = await page.locator('.pager a[rel="next"]').getAttribute('href').catch(() => null);
+// v3 pager はサイドバーと同じ /index.html 付きリンクを出す
+ok('pager prev', prevHref === '/gpu/12-cpu-vs-gpu/index.html', String(prevHref));
+ok('pager next', nextHref === '/cpu-deep/14-virtual-memory/index.html', String(nextHref));
+ok('pager label ja', (await page.locator('.pager .pager-label').first().textContent())?.trim() === '前のページ');
 
-// --- 編集モード ---
-await play.locator('.rust-play__btn--edit').click();
-await page.waitForTimeout(200);
-const editorVisible = await play.locator('.rust-play__editor').isVisible();
-const editorCode = await play.locator('.rust-play__editor').inputValue();
-ok('edit mode textarea', editorVisible && editorCode.includes('fn main'), editorCode.slice(0, 40).replace(/\n/g, '⏎'));
-await play.locator('.rust-play__btn--reset').click();
-
-// --- Playgroundリンク ---
-const href = await play.locator('.rust-play__link').getAttribute('href');
-ok('playground link', href?.startsWith('https://play.rust-lang.org/?version=') && href.includes('code='), href?.slice(0, 60));
-
-// --- 実行ボタン(外部API) ---
-await play.locator('.rust-play__btn--run').click();
+// --- code-play 実行(外部API: play.rust-lang.org) ---
+// ja-ui.js が Run → 実行 に置換していることも同時に検証する
+const runBtn = play.locator('button[data-ox-action="run"]');
+await runBtn.waitFor({ timeout: 10000 });
+ok('run button ja', (await runBtn.textContent())?.trim() === '実行');
+// ch13 の overflow スニペットは debug モード(patch-code-play の反映確認)
+const overflowConfig = await playConfig(page, 0);
+ok('config debug kept', overflowConfig && overflowConfig.mode === 'debug', JSON.stringify(overflowConfig));
+await runBtn.click();
 try {
   await page.waitForFunction(
     () => {
-      const out = document.querySelector('.rust-play .rust-play__output');
-      return out && out.textContent && !out.textContent.includes('実行中');
+      const panel = document.querySelector('ox-code-play [data-panel="stdio"]');
+      const text = panel?.textContent.trim() ?? '';
+      return text.length > 0 && !text.includes('No stdio yet');
     },
     { timeout: 30000 }
   );
-  const output = await play.locator('.rust-play__output').textContent();
+  const output = await play.locator('[data-panel="stdio"]').textContent();
   ok('run output', output.trim().length > 0, output.trim().slice(0, 80).replace(/\n/g, '⏎'));
 } catch {
   ok('run output', false, 'timeout (network?)');
@@ -111,7 +117,7 @@ if (!emptyOk) {
 ok('search empty ja', emptyOk);
 await page.keyboard.press('Escape');
 
-// --- mermaid + SVG図(01-how-code-runs) ---
+// --- mermaid + SVG図(01-how-code-runs) + debug/release ペア ---
 await page.goto(`${BASE}/cpu/01-how-code-runs/`, { waitUntil: 'networkidle' });
 ok('mermaid svg', (await page.locator('.ox-mermaid svg').count()) > 0, String(await page.locator('.ox-mermaid svg').count()));
 const fig = page.locator('.book-figure svg').first();
@@ -124,14 +130,41 @@ if ((await page.locator('.book-figure svg').count()) > 0) {
 } else {
   ok('book-figure svg present elsewhere', true, 'no figure on this page');
 }
+// 同一スニペットの debug/release ペア(patch-code-play が出現順で反映)
+const ch01First = await playConfig(page, 0);
+const ch01Second = await playConfig(page, 1);
+ok('ch01 debug widget', ch01First && ch01First.mode === 'debug', JSON.stringify(ch01First));
+ok('ch01 release widget', ch01Second && ch01Second.mode === 'release', JSON.stringify(ch01Second));
 await page.screenshot({ path: `${SHOT}/mermaid.png` });
+
+// --- nightly widget (04-simd) ---
+await page.goto(`${BASE}/cpu/04-simd/`, { waitUntil: 'networkidle' });
+const nightly = await page.evaluate(() =>
+  [...document.querySelectorAll('ox-code-play')]
+    .map((el) => JSON.parse(atob(el.getAttribute('data-ox-code-play'))).config)
+    .find((c) => c.channel === 'nightly')
+);
+ok('nightly config', Boolean(nightly), JSON.stringify(nightly));
+
+// --- wgsl ハイライト (highlight-fallback) ---
+await page.goto(`${BASE}/gpu/12-cpu-vs-gpu/`, { waitUntil: 'networkidle' });
+const wgslPlain = await page.evaluate(
+  () => document.querySelectorAll('code.language-wgsl:not(.shiki code)').length
+);
+const wgslShiki = await page.evaluate(() =>
+  [...document.querySelectorAll('pre.shiki')].filter((el) =>
+    el.innerHTML.includes('--octc-shiki-token-keyword')
+  ).length
+);
+ok('wgsl highlighted', wgslShiki > 0, `shiki=${wgslShiki}`);
+ok('wgsl no plain block', wgslPlain === 0, `plain=${wgslPlain}`);
 
 // --- トップページ ---
 await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
 ok('top page h1', (await page.textContent('article h1'))?.trim() === 'はじめに');
-ok('top rust-play', (await page.locator('.rust-play').count()) === 1);
-ok('top pager no-prev', (await page.locator('.book-pager a[rel="prev"]').count()) === 0);
-ok('top pager next', (await page.locator('.book-pager a[rel="next"]').getAttribute('href').catch(() => null)) === '/cpu/01-how-code-runs/');
+ok('top code-play', (await page.locator('ox-code-play').count()) === 1);
+ok('top pager no-prev', (await page.locator('.pager a[rel="prev"]').count()) === 0);
+ok('top pager next', (await page.locator('.pager a[rel="next"]').getAttribute('href').catch(() => null)) === '/cpu/01-how-code-runs/index.html');
 await page.screenshot({ path: `${SHOT}/top.png` });
 
 // --- モバイル ---

@@ -1,21 +1,24 @@
 // docs/ の Markdown を ox-content が処理できる形へ展開して .ox-docs/ に出力する。
 //
-// ox-content には aside 記法(:::note)がなく、SSG はフレームワーク
-// コンポーネントも Vite の transform も通さないため、ビルド前に
-// テキストレベルで次の2つを展開する:
+// v3 移行後の役割:
 //
-//   1. :::note[タイトル] 〜 :::  → <aside> + Markdown本文 (空行区切りで
-//      HTMLブロックとMarkdownを交互に置く CommonMark のパターン)
-//   2. <RustPlay snippet="..." /> → 静的HTML + rust フェンスコード
-//      (ハイライトは ox-content 本体のパイプラインに任せる)
+//   1. <RustPlay snippet="..." /> → ```rust play フェンス
+//      (ハイライトは ox-content、実行UIは @ox-content/code-play が担う)
+//   2. frontmatter title の h1 注入 (v3 テーマも本文に h1 を出さないため)
 //
-// 実行ボタン等の動作は src/theme/rust-play.js (全ページ共通・イベント
-// 委譲) が担う。Starlight 版 RustPlay.astro と同じ構成。
+// :::note は v3 の containers オプションがそのまま処理するので展開しない
+// (タイポ検出のため :::note 以外のディレクティブは引き続きエラーにする)。
+//
+// code-play の config はグローバル設定しか無いため、RustPlay 属性由来の
+// widget 別 config (mode="release" / channel="nightly" 等) はページごとの
+// フェンス順 manifest に書き出し、ビルド後に scripts/patch-code-play.mjs が
+// dist の payload へ反映する。
 import { globSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 const SRC = 'docs';
 const OUT = '.ox-docs';
+export const MANIFEST = join(OUT, 'code-play-manifest.json');
 
 const escapeHtml = (s) =>
   s
@@ -24,86 +27,49 @@ const escapeHtml = (s) =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
 
-function expandAsides(src, file) {
+// :::note 以外の ::: ディレクティブ(タイポ等)を検出する。
+// :::note 自体は containers オプションが処理するため素通しする。
+function validateDirectives(src, file) {
   const lines = src.split('\n');
-  const out = [];
+  let inFence = false;
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^:::note(?:\[(.+?)\])?\s*$/);
-    if (!m) {
-      if (/^:::/.test(lines[i])) {
-        throw new Error(`${file}:${i + 1}: unsupported directive: ${lines[i]}`);
-      }
-      out.push(lines[i]);
-      continue;
+    if (/^(```|~~~)/.test(lines[i])) inFence = !inFence;
+    if (inFence) continue;
+    if (/^:::/.test(lines[i]) && !/^:::note(\[|\s*$)/.test(lines[i]) && lines[i].trim() !== ':::') {
+      throw new Error(`${file}:${i + 1}: unsupported directive: ${lines[i]}`);
     }
-    const title = m[1] ?? 'ノート';
-    const body = [];
-    let j = i + 1;
-    for (; j < lines.length && lines[j].trim() !== ':::'; j++) body.push(lines[j]);
-    if (j === lines.length) throw new Error(`${file}:${i + 1}: unclosed :::note`);
-    out.push(
-      `<aside aria-label="${escapeHtml(title)}" class="book-aside">`,
-      `<p class="book-aside__title" aria-hidden="true">${escapeHtml(title)}</p>`,
-      `<div class="book-aside__content">`,
-      '',
-      ...body,
-      '',
-      `</div>`,
-      `</aside>`
-    );
-    i = j;
   }
-  return out.join('\n');
 }
 
-function expandRustPlay(src, file) {
-  // 行末マッチに \s*$ を使うと直後の空行(改行)まで食ってしまい、
-  // 生成した閉じ</div>と次の段落が隣接して段落がHTMLブロックに
-  // 吸い込まれる(**強調**等が処理されなくなる)。行内の空白のみ許容。
+function expandRustPlay(src, file, fences) {
   return src.replace(/^<RustPlay\s+([^>]*?)\/>[ \t]*$/gm, (whole, attrText) => {
     const attrs = {};
     for (const am of attrText.matchAll(/(\w+)="([^"]*)"/g)) attrs[am[1]] = am[2];
     const { snippet, title, channel = 'stable', mode = 'debug', edition = '2024' } = attrs;
     if (!snippet) throw new Error(`${file}: RustPlay without snippet: ${whole}`);
     const path = join('src/snippets', `${snippet}.rs`);
-    const code = readFileSync(path, 'utf8').replace(/\n+$/, '\n');
-    const playgroundUrl = `https://play.rust-lang.org/?version=${channel}&mode=${mode}&edition=${edition}&code=${encodeURIComponent(code)}`;
-    const fence = '`````';
-    // 前後の空行はHTMLブロックを前後の段落から確実に切り離すための保険
+    const code = readFileSync(path, 'utf8').replace(/\n+$/, '');
+    // code-play カタログの既定値(stable/debug/2024)と異なる分だけを記録
+    const config = {};
+    if (channel !== 'stable') config.channel = channel;
+    if (mode !== 'debug') config.mode = mode;
+    if (edition !== '2024') config.edition = edition;
+    fences.push({ snippet, code, config });
     return [
       '',
-      `<div class="rust-play" data-channel="${channel}" data-mode="${mode}" data-edition="${edition}">`,
-      `<div class="rust-play__code">`,
-      title ? `<div class="rust-play__title">${escapeHtml(title)}</div>` : null,
+      ...(title ? [`<div class="play-title">${escapeHtml(title)}</div>`, ''] : []),
+      '```rust play',
+      code,
+      '```',
       '',
-      `${fence}rust`,
-      code.replace(/\n$/, ''),
-      fence,
-      '',
-      `</div>`,
-      // ボタン類は rust-play.js が有効化する。JS無効時は
-      // Playgroundリンクだけが機能する(元実装と同じ扱い)。
-      `<div class="rust-play__toolbar">`,
-      `<button class="rust-play__btn rust-play__btn--run" type="button">▶ 実行</button>`,
-      `<button class="rust-play__btn rust-play__btn--edit" type="button">編集</button>`,
-      `<button class="rust-play__btn rust-play__btn--reset" type="button" hidden>リセット</button>`,
-      `<span class="spacer"></span>`,
-      `<span class="rust-play__meta">${channel} / ${mode}</span>`,
-      `<a class="rust-play__link" href="${playgroundUrl}" target="_blank" rel="noopener noreferrer">Playgroundで開く ↗</a>`,
-      `</div>`,
-      `<pre class="rust-play__output" aria-live="polite" hidden></pre>`,
-      `</div>`,
-      '',
-    ]
-      .filter((l) => l !== null)
-      .join('\n');
+    ].join('\n');
   });
 }
 
 // Starlight は frontmatter の title をページ見出し(h1)として描画するが、
 // ox-content のテーマは本文をそのまま出すだけなので、本文に h1 が
 // なければ先頭に挿入して同じ見た目にする。
-function injectTitleHeading(src, file) {
+function injectTitleHeading(src) {
   const m = src.match(/^---\n([\s\S]*?)\n---\n/);
   if (!m) return src;
   const title = m[1].match(/^title:\s*(.+)$/m)?.[1]?.trim().replace(/^['"]|['"]$/g, '');
@@ -116,19 +82,23 @@ function injectTitleHeading(src, file) {
 export function preprocessDocs() {
   rmSync(OUT, { recursive: true, force: true });
   const files = globSync(`${SRC}/**/*.md`);
+  const manifest = {};
   let plays = 0;
   let asides = 0;
   for (const file of files) {
     let text = readFileSync(file, 'utf8');
     asides += (text.match(/^:::note/gm) ?? []).length;
-    plays += (text.match(/^<RustPlay/gm) ?? []).length;
-    text = injectTitleHeading(text, file);
-    text = expandAsides(text, file);
-    text = expandRustPlay(text, file);
+    validateDirectives(text, file);
+    text = injectTitleHeading(text);
+    const fences = [];
+    text = expandRustPlay(text, file, fences);
+    plays += fences.length;
+    if (fences.length > 0) manifest[file.slice(SRC.length + 1).replace(/\.md$/, '')] = fences;
     const dest = join(OUT, file.slice(SRC.length + 1));
     mkdirSync(dirname(dest), { recursive: true });
     writeFileSync(dest, text);
   }
+  writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2));
   return { files: files.length, plays, asides };
 }
 

@@ -97,228 +97,81 @@ body:not(.entry-page) .header {
   }
 }
 
-/* ---- RustPlay: インタラクティブ実行ブロック ---- */
-.rust-play {
-  margin: 1rem 0;
-  border: 1px solid var(--octc-color-border);
-  border-radius: 0.5rem;
-  overflow: hidden;
+/* ---- Code Play: インタラクティブ実行ブロック ----
+   ウィジェット本体(枠・ツールバー・タブ)は @ox-content/code-play が
+   注入する CODE_PLAY_STYLES が --octc-* 変数で描画する。ここでは
+   本文フォントへの追従と、タイトルバー(.play-title)の結合のみ行う。 */
+ox-code-play {
+  display: block;
 }
 
-.rust-play__title {
+/* preprocess-docs.mjs が RustPlay の title 属性から生成するタイトルバー。
+   直後の Code Play ウィジェットと1つの箱に見えるよう結合する。 */
+.play-title {
+  margin: 1.25rem 0 0;
   padding: 0.4rem 1rem 0.35rem;
-  border-bottom: 1px solid var(--octc-color-border);
+  border: 1px solid var(--octc-color-border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
   background: var(--sl-color-gray-6);
   color: var(--octc-color-text);
   font-size: var(--sl-text-sm);
   font-weight: 600;
 }
 
-.rust-play__code pre {
-  border-radius: 0;
-  border: none;
-  margin: 0;
-}
-
-.rust-play__toolbar {
-  display: flex;
-  /* 幅が足りないときはボタンのラベルを縦に折らず、行ごと折り返す */
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  background: var(--sl-color-gray-6);
-  font-size: var(--sl-text-sm);
-}
-
-.rust-play__toolbar > *,
-.rust-play > * {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-.rust-play__toolbar .spacer {
-  flex: 1;
-}
-
-.rust-play__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--sl-color-gray-4);
-  border-radius: 0.35rem;
-  background: var(--octc-color-bg);
-  color: var(--octc-color-text);
-  font-size: var(--sl-text-sm);
-  cursor: pointer;
-}
-
-.rust-play__btn:hover {
-  border-color: var(--octc-color-primary);
-}
-
-.rust-play__btn--run {
-  background: var(--sl-color-accent-low);
-  border-color: var(--octc-color-primary);
-}
-
-.rust-play__btn[disabled] {
-  cursor: wait;
-}
-
-.rust-play__btn[hidden] {
-  display: none;
-}
-
-.rust-play__meta {
-  color: var(--sl-color-gray-3);
-  font-size: var(--sl-text-xs);
-  white-space: nowrap;
-}
-
-.rust-play__link {
-  font-size: var(--sl-text-xs);
-  color: var(--sl-color-gray-3);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.rust-play__link:hover {
-  color: var(--sl-color-accent-high);
-}
-
-.rust-play__editor {
-  display: none;
-  width: 100%;
-  min-height: 12rem;
-  padding: 0.75rem 1rem;
-  border: none;
-  resize: vertical;
-  background: var(--octc-color-code-bg, var(--sl-color-gray-7));
-  color: var(--octc-color-code-text, var(--octc-color-text));
-  font-family: var(--__sl-font-mono);
-  font-size: var(--sl-text-xs);
-  line-height: 1.65;
-  tab-size: 4;
-}
-
-.rust-play.is-editing .rust-play__editor {
-  display: block;
-}
-
-.rust-play.is-editing .rust-play__code {
-  display: none;
-}
-
-.rust-play__output {
-  display: none;
-  margin: 0;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 0;
-  background: var(--octc-color-code-bg, var(--sl-color-gray-7));
-  color: var(--sl-color-gray-2);
-  font-family: var(--__sl-font-mono);
-  font-size: var(--sl-text-xs);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  max-height: 24rem;
-  overflow-y: auto;
-}
-
-/* holoスキンは .content pre (詳細度0,1,1) に箔ボーダー(border-box背景の
-   background!important)と丸角を当てるため、.rust-play__output (0,1,0)の
-   border:none だけでは打ち消せない。詳細度を上げてフラット表示にする。
-   display は上のブロックに残す(.is-visible の切り替えを壊さないため)。 */
-.content pre.rust-play__output {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 0;
-  background: var(--octc-color-code-bg, var(--sl-color-gray-7)) !important;
-  box-shadow: none;
-}
-
-.rust-play__output.is-visible {
-  display: block;
-}
-
-.rust-play__output .stderr {
-  color: var(--sl-color-orange);
-}
-
-.rust-play__output .error {
-  color: var(--sl-color-red);
-}
-
-/* RustPlayツールバーをモバイルで1行に収める。ボタンの余白とメタ情報の
-   フォントを詰めて「Playgroundで開く」のカラム落ちを防ぐ(320px級の
-   極端に狭い幅ではflex-wrapで折り返しに退避)。同一詳細度の上の基本
-   ルールを上書きするため、このセクションより後ろに置くこと。 */
-@media (max-width: 768px) {
-  .rust-play__toolbar {
-    gap: 0.4rem;
-    padding-inline: 0.5rem;
-  }
-
-  .rust-play__btn {
-    padding: 0.25rem 0.55rem;
-    font-size: 0.8125rem;
-  }
-
-  .rust-play__meta,
-  .rust-play__link {
-    font-size: 0.7rem;
-  }
-}
-
-/* ---- Aside (旧 :::note) ---- */
-.book-aside {
-  margin: 1rem 0;
-  padding: 0.9rem 1rem;
-  border-radius: 0.25rem;
-  background: color-mix(in srgb, var(--octc-color-primary) 9%, var(--octc-color-bg));
-  color: var(--octc-color-text);
-}
-
-.book-aside__title {
-  margin: 0 0 0.4rem;
-  font-size: var(--sl-text-sm);
-  font-weight: 700;
-  color: var(--octc-color-primary);
-}
-
-.book-aside__content > :first-child {
+.play-title + ox-code-play {
   margin-top: 0;
 }
 
-.book-aside__content > :last-child {
-  margin-bottom: 0;
+.play-title + ox-code-play .ox-code-play,
+.play-title + ox-code-play > pre {
+  margin-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
-/* ---- 前後ページリンク (scripts/inject-pager.mjs が注入) ---- */
-.book-pager {
-  display: flex;
+/* holoスキンの .content pre (箔ボーダー+丸角+background!important) を
+   ウィジェット内ではフラットに戻す。 */
+.content ox-code-play pre {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 実行結果や設定パネルの文字はコード用フォントに合わせる */
+.ox-code-play__panel pre,
+.ox-code-play__panel code {
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+}
+
+/* ---- Aside (:::note → v3 containers) ----
+   枠・ティント・タイトルは ssg.css の .ox-container が描画する。
+   日本語ラベル「ノート」向けにタイトルの字詰めだけ調整する。 */
+.content .ox-container-title {
+  font-size: var(--sl-text-sm);
+  letter-spacing: 0.02em;
+}
+
+/* ---- 前後ページリンク (v3 ssg.pagination) ----
+   デフォルトはテキストリンクのみなので、旧 inject-pager と同じ
+   カード型に整える。ラベルの日本語化は ja-ui.js が行う。 */
+.pager {
   gap: 1rem;
   margin-top: 3rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--octc-color-border);
+  justify-content: space-between;
+  font-size: inherit;
 }
 
-.book-pager__link {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.pager-link {
+  width: calc(50% - 0.5rem);
   gap: 0.35rem;
   padding: 0.85rem 1rem;
   border: 1px solid var(--octc-color-border);
   border-radius: 0.5rem;
-  text-decoration: none;
-  min-width: 0;
   transition:
     background-color var(--octc-motion-fast) var(--octc-motion-ease),
     transform var(--octc-motion-base) var(--octc-motion-spring);
@@ -326,42 +179,47 @@ body:not(.entry-page) .header {
 
 /* ホバーはサイドメニュー/目次と同じ仕様(背景ティント+右シフト)。
    ボーダー色や文字色は変えない。 */
-.book-pager__link:hover {
+.pager-link:hover {
   background: color-mix(in srgb, var(--octc-accent-c, var(--octc-color-primary)) 14%, transparent);
   transform: translateX(3px);
   text-decoration: none;
 }
 
-.book-pager__link--next {
-  text-align: right;
+.pager-link:hover .pager-title {
+  color: var(--octc-color-text);
 }
 
-.book-pager__spacer {
-  flex: 1;
-}
-
-.book-pager__dir {
+.pager-label {
   font-size: var(--sl-text-xs);
   color: var(--sl-color-gray-3);
 }
 
-.book-pager__title {
+.pager-title {
   font-weight: 600;
   color: var(--octc-color-text);
   overflow-wrap: anywhere;
 }
 
+.pager-link--prev .pager-title::before {
+  content: '← ';
+}
+
+.pager-link--next .pager-title::after {
+  content: ' →';
+}
+
 @media (max-width: 640px) {
-  .book-pager {
+  .pager {
     flex-direction: column;
   }
 
-  .book-pager__link--next {
-    text-align: left;
+  .pager-link {
+    width: 100%;
   }
 
-  .book-pager__spacer {
-    display: none;
+  .pager-link--next {
+    text-align: left;
+    margin-left: 0;
   }
 }
 

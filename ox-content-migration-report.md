@@ -160,3 +160,107 @@ Vue 等のフレームワーク依存は不要になった。
 ## 調査方法
 
 ox-content 公式ドキュメント全25ページを分野別に精読し（一次調査8並列）、クリティカル5項目（A/C/D/F/G）は別エージェントが反証目的で独立再検証。判定はすべてドキュメント本文の引用、または配信されている実物のJS/CSS/検索インデックス/ビルド済みHTMLの解析に基づく（憶測による「たぶん対応」は排除）。
+## 3.0.0-alpha.1 調査 (2026-08-25 追記)
+
+v3.0.0-alpha.1（2026-08-25 公開、npm dist-tag `alpha`。theme-holo / theme-color-github にも同バージョンあり）で、上記の自作部分の一部がビルトイン化された。5本柱は Stable Theme Packages(#700)・完全MDX(#701)・Code Play(#648)・opt-in docs-site built-ins(#650)・tree-sitter ハイライト(#702)。判定はリリースノート、GitHub issue/PR、および実装ソース（Rust crate / npm パッケージ）の直接確認に基づく。
+
+### 自作部分の v3 対応表
+
+| 自作部分 | v3 での置き換え | 判定 |
+|---|---|---|
+| `:::note` 展開 (preprocess-docs.mjs) | `containers` オプション (PR #707) | ✅ 完全置き換え可 |
+| prev/next (inject-pager.mjs) | `ssg.pagination: true` (PR #713) | ✅ 完全置き換え可（ラベル英語） |
+| RustPlay (rust-play.js + preprocess展開) | `@ox-content/code-play` 別パッケージ | △ 編集・Playgroundリンクが無い |
+| ja-ui.js（UI文言日本語化） | 無し | ❌ 継続（対象はむしろ増える） |
+| h1 注入 (preprocess-docs.mjs) | 無し（v3テンプレートも本文h1を出さない） | ❌ 継続 |
+| verify-build.mjs（mermaid検出） | 変更なし | ❌ 継続 |
+| sidebar.mjs / generate-ogp.ts | 変更なし | ❌ 継続 |
+| `highlightLangs`（wgsl/asm/llvm/toml） | **オプション自体が削除** | 🚫 退行（下記ブロッカー） |
+
+### 確認済みの詳細
+
+- **containers**: `containers: true` で `::: tip/note/info/important/warning/danger/caution/details` の8種が有効。パーサ（`crates/ox_content_transform/src/features/containers/parse.rs`）は `:::` 直後の空白を trim してから `[` で名前を区切るため、**本書の `:::note[タイトル]`（スペース無し・ブラケット題）はそのまま通る**（テストケースで確認）。`containers: { types: { note: { title: "ノート" } } }` でビルトイン型の既定ラベルを上書き可能（`resolve()` が同キー insert で上書きする実装を確認）。出力は `<div class="ox-container ox-container-note"><p class="ox-container-title">…` で現行の `<aside>` と異なるため CSS の移植が必要。
+- **pagination**: `ssg.pagination: true`。順序はサイドバーを depth-first に平坦化したもので、現行 inject-pager.mjs と同じ「sidebar.mjs = 単一情報源」の設計がそのまま成立。frontmatter で `prev: false` / `{ text, link }` の個別上書き可。ラベル `Previous` / `Next` は SSG テンプレート（`crates/ox_content_ssg/templates/page.html`）に英語ハードコードのため ja-ui.js での日本語化対象に追加。
+- **Code Play**: `@ox-content/code-play@alpha`（新規パッケージ・二重opt-in）。` ```rust play typecheck ` フェンスメタだけでウィジェット化。Rust は play.rust-lang.org へブラウザから直接 POST（現行 rust-play.js と同方式。`endpoints.rust` で上書き可）。SSG 出力へのハイドレートは CI 実証済み（PR #711）、SSG後に outDir の HTML を強化し自己完結クライアント `ox-code-play.js` を配布。UI は Run / Typecheck / Cancel + stdio / stderr / config / provenance / timing タブ。**ただし ui.ts / hydrate.ts を確認した結果、コード編集（textarea）と「Playground で開く」リンクは無い**。現行 RustPlay の4機能（表示・実行・編集・Playgroundリンク）のうち後ろ2つが落ちる。採用する場合 preprocess の RustPlay 展開は「` ```rust play ` フェンスへの展開」に簡素化できる。
+- **ハイライト（最大のブロッカー）**: Shiki 完全廃止・tree-sitter 一本化（PR #710 / issue #702）。`highlightLangs` / `highlightTheme` は削除。バンドル文法は bash/c/cpp/css/go/html/java/js/json/md/python/rust/ts/yaml のみ（`crates/ox_content_highlight/Cargo.toml` で確認）。**wgsl・asm・llvm・toml は全てプレーンテキストになる**。#702 で「カスタム文法のユーザー登録は 3.0 スコープ外。需要のある言語は in-repo で追加」と明記。CSS 変数契約（`--octc-shiki-*`・`class="shiki"`）は互換維持。
+- **UI文言 / i18n**: v3 テンプレートでも chrome 文言（On this page / Search / Menu / Theme / Previous / Next / Last updated）は英語ハードコード。新しい MF2 i18n 辞書機構（`i18n.md`）はコンテンツ翻訳用でテーマ chrome には配線されていない。ja-ui.js 継続、新 chrome（ページャ・パンくず・コピーボタン等）を使うほどパッチ対象が増える点に注意。
+- **その他の変更点**: 右カラム目次（aside）が opt-in 化（PR #715、`ThemeOptions.aside` 省略/false で非表示 → 移行時は明示 `aside: true` が必要か要確認）。`.mdx` で本物の MDX（import/export・JSX・island props・markdown children、PR #788 ほか）が入ったが、現行の .md + preprocess 構成には不要。mermaid のサイレントフォールバック挙動は変更なし。
+- **新規に無料で得られるもの**: math・includes・badges・file-tree・steps・cards・figures、sitemap/robots/llms.txt、feeds、redirects、404、drafts、permalinks/frontmatter cascade、breadcrumbs、コピー/外部リンク/back-to-top、header nav・announcement bar（PR #750）、locale switcher、taxonomies、docs versioning、hosted search adapter（すべて opt-in・デフォルトOFF）。
+
+### 判定
+
+- **3.0 安定版で置き換え確定候補**: containers（`:::note`）と `ssg.pagination`。preprocess-docs.mjs は「RustPlay展開 + h1注入」だけに縮小、inject-pager.mjs は削除できる。
+- **判断ポイント**: Code Play への乗り換えは「編集」「Playgroundリンク」の2機能を捨てられるか次第。捨てないなら rust-play.js 継続（併存は UI が2系統になり歪）。
+- **移行ブロッカー**: tree-sitter 文法に wgsl/asm/llvm/toml が無い限り、GPU 本としてハイライトの退行が致命的。upstream への文法追加リクエスト（特に wgsl / toml）が先決。
+- alpha.1 は公開初日。検証は preview 環境（`deploy:preview`）で行い、本番は安定版 + 文法追加を待つ。
+
+## 3.0.0-alpha.1 実装結果 (2026-08-25 追記)
+
+上記調査の方針で v3.0.0-alpha.1 への移行を実装した(ブランチ ox-content-v3)。
+ユーザー決定: (1) wgsl/asm/llvm/toml は自前 Shiki 後処理でハイライト維持、
+(2) RustPlay は Code Play へ置き換え(編集・Playground リンクの喪失を許容)。
+e2e 32項目全PASS。ビルド実測: 31ページ / play 45(全ラップ・42パッチ) /
+note 15 / mermaid 10 / pager 31 / フォールバックハイライト 17ブロック。
+
+### 構成の変化
+
+| 部位 | v2.90 (自作) | v3.0.0-alpha.1 |
+|---|---|---|
+| `:::note` | preprocess で `<aside>` 展開 | `containers: { types: { note: { title: 'ノート' } } }`。記法無変更 |
+| prev/next | inject-pager.mjs(削除) | `ssg.pagination: true` + custom.css でカード型に再現 |
+| RustPlay | rust-play.js(削除)+ preprocess 展開 | `@ox-content/code-play`。preprocess は ```rust play フェンス展開に簡素化 |
+| 右カラム目次 | デフォルトON | v3 で opt-in 化 → テーマ層に `aside: true` |
+| wgsl/asm/llvm/toml | `highlightLangs`(v3で削除) | scripts/highlight-fallback.mjs(SSG後に Shiki css-variables で置換) |
+| UI文言 | ja-ui.js | 継続。pager(Previous/Next)と Code Play(Run/Typecheck/Cancel)を追加、MutationObserver で再描画へ追従 |
+
+### 新規スクリプトと回避策(v3 の制約由来)
+
+1. **scripts/patch-code-play.mjs** — code-play の widget config はグローバル
+   設定しか無く、`mode="release"`(42箇所)と debug 必須の ch01/cpu-speed・
+   ch13/overflow、nightly 必須の ch04/nightly-simd を再現できない。
+   preprocess がページ別・出現順の manifest (.ox-docs/code-play-manifest.json)
+   を書き出し、SSG 後に `<ox-code-play>` の base64 payload へ config を反映する。
+   同一スニペットを debug/release で使い分ける ch01 があるため、コード内容
+   ではなく出現順で突き合わせる。ズレはビルド失敗にする。
+2. **normalizeEntities (patch-code-play.mjs 内)** — SSG は本文の `<`/`&` の
+   一部を16進エンティティ(`&#x3C;`/`&#x26;`)で出力するが、code-play の
+   SSG マッチング(decodeHtml)は名前付きエンティティしか解さず、該当コードを
+   含む play フェンスがラップされない(45箇所中2箇所で発生)。codePlay の
+   closeBundle より前に等価な名前付きエンティティへ正規化して回避。
+   **upstream に報告する価値あり**。
+3. **scripts/highlight-fallback.mjs** — tree-sitter 文法一覧(bash/c/cpp/css/
+   go/html/java/js/json/md/python/rust/ts/yaml)に無い言語は
+   `<pre><code class="language-*">` のまま残るため、Shiki の
+   createCssVariablesTheme(prefix `--octc-shiki-`、crates/ox_content_highlight/
+   src/theme.rs と同一のフォールバック表)で本体と同一契約の markup に置換。
+   **upstream が wgsl/toml 文法を追加したら削除できる**。
+
+### 既知の差分・注意点
+
+- **編集・Playground リンクは廃止**(Code Play 未対応のため)。代わりに
+  型チェック・stderr ビューア(タイムスタンプ付き)・タイムアウト・中断・
+  timing/provenance タブを獲得。debug ビルドの overflow panic も stderr に
+  赤字で表示され、教材としてはむしろ情報量が増えた
+- **pager リンクは `/index.html` 付き**(サイドバーと同形式。旧自作 pager
+  のみクリーン URL だった)。e2e の期待値を更新済み
+- **dev サーバでは patch-code-play が効かない**(closeBundle はビルドのみ)。
+  dev 中の widget は全てカタログ既定値(stable/debug)で動く。nightly スニペットを
+  dev で実行するとエラーになるが、config タブから手動で切り替え可能
+- ビルドには `PUPPETEER_EXECUTABLE_PATH`(mermaid 用、従来通り)が必要
+- `[ox-content:i18n] Dictionary directory not found: content/i18n` の警告が
+  出るが無害(v3 の MF2 辞書機構は未使用)
+- フェンスは 3 連バッククォートに変更(スニペットにバッククォートが無いことを
+  確認済み。旧実装の 5 連は HTML ブロック内包のための保険だった)
+
+### 追記: stdio 表示の調整 (src/theme/play-output.js)
+
+Rust Playground は正常実行でも cargo のビルドログ(Compiling/Finished/Running)を
+stderr で返す。Code Play は (1) stderr チャンクを赤字表示し、(2) stderr が空で
+ない限り実行後に stderr タブへ自動切替するため、**正常実行が毎回エラー画面に
+見える**(旧 rust-play.js はこのノイズをフィルタしていた)。テーマ JS の
+play-output.js で旧実装と同じパターンをフィルタし、フィルタ後に stderr が
+実質空(本物のエラーなし)なら stdio タブへ戻す。本物の panic やコンパイル
+エラーは残り、その場合は stderr タブ着地のまま(エラーが即座に見える)。
+実装注意: `.ox-code-play__stdio-line` はウィジェット CSS が display:grid を
+持つため hidden 属性では消えず、inline style で display:none にする必要がある。
+これも upstream に報告する価値あり(正常実行で stderr タブに着地する挙動)。
