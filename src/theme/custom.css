@@ -408,6 +408,18 @@ body:not(.entry-page) .header {
   border-end-end-radius: 11px;
 }
 
+/* ---- 目次ホバーをサイドメニューと揃える ----
+   ベーステーマは .toc-link:hover に左ボーダーとプライマリ文字色を
+   与えるが、サイドメニュー(.nav-link:hover)は背景ティント+通常文字色
+   (ティントとtranslateXはholoが両者に付与)。目次も同じ挙動にする。 */
+.toc-link {
+  border-left: 0;
+}
+
+.toc-link:hover {
+  color: var(--octc-color-text);
+}
+
 /* ---- 本文の折り返しを通常の貪欲アルゴリズムに戻す ----
    holoは本文に text-wrap:pretty を当てるが、Safariのpretty実装は
    段落全体を最適化するため、和文では行末が大きく空く(折り返しが
