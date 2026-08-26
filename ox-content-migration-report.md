@@ -264,3 +264,27 @@ play-output.js で旧実装と同じパターンをフィルタし、フィル�
 実装注意: `.ox-code-play__stdio-line` はウィジェット CSS が display:grid を
 持つため hidden 属性では消えず、inline style で display:none にする必要がある。
 これも upstream に報告する価値あり(正常実行で stderr タブに着地する挙動)。
+
+## 3.0.0-alpha.9 更新 (2026-08-26 追記)
+
+起票した 3 issue がすべて修正されたため alpha.9 へ更新し、不要になった
+回避策を削除した。e2e 32項目 PASS(45 widget 全ラップをエンティティ正規化
+なしで確認)。
+
+- **#807 → PR #812**: decodeHtml が数値文字参照を解釈するようになり、
+  `normalizeEntities`(patch-code-play.mjs 内)と normalizeEntitiesPlugin を削除
+- **#808 → PR #813**: 成功した実行は stdio タブに留まり、stderr タブへの
+  自動切替は失敗時のみに変更。play-output.js の「stdio へ戻す」処理は実質
+  空振りになったが、cargo ノイズの赤字表示自体は上流未対応のため
+  **ノイズ行フィルタとして play-output.js は維持**
+- **#809 → PR #817**: toml(tree-sitter-toml-ng)/ wgsl(tree-sitter-wgsl-bevy)の
+  ネイティブ文法が追加。highlight-fallback.mjs は **asm/llvm のみ**に縮小
+  (5ブロック)。この2言語も追加されたら削除できる
+- **破壊的変更**: ハイライトの CSS 契約が改名された —
+  `<pre class="shiki css-variables">` → `<pre class="ox-highlight css-variables">`、
+  `--octc-shiki-*` → `--octc-syntax-*`(トークン名サフィックスは同一)。
+  theme-color パッケージも同期更新されているため通常は無対応で良いが、
+  highlight-fallback.mjs のプレフィックス/クラス名と e2e のセレクタを追随させた
+- e2e の run output 検証を「panic が画面に見える + cargo ノイズが無い」の
+  可視テキストベースに強化(従来の判定は日本語化後のプレースホルダを
+  実行完了と誤認していた)

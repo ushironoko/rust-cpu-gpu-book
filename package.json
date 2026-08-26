@@ -12,10 +12,10 @@
     "deploy:preview": "void deploy --project rust-cpu-gpu-book-preview --dir dist"
   },
   "dependencies": {
-    "@ox-content/code-play": "3.0.0-alpha.1",
-    "@ox-content/theme-color-github": "3.0.0-alpha.1",
-    "@ox-content/theme-holo": "3.0.0-alpha.1",
-    "@ox-content/vite-plugin": "3.0.0-alpha.1",
+    "@ox-content/code-play": "3.0.0-alpha.9",
+    "@ox-content/theme-color-github": "3.0.0-alpha.9",
+    "@ox-content/theme-holo": "3.0.0-alpha.9",
+    "@ox-content/vite-plugin": "3.0.0-alpha.9",
     "shiki": "4.4.2",
     "vite": "8.2.2"
   },

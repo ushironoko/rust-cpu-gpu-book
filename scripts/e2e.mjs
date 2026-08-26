@@ -34,7 +34,7 @@ ok('sidebar label', (await page.textContent('.sidebar'))?.includes('13. 数の�
 ok('toc localized', (await page.textContent('.toc-title'))?.trim() === '目次');
 const play = page.locator('ox-code-play').first();
 ok('code-play count', (await page.locator('ox-code-play').count()) === 5, String(await page.locator('ox-code-play').count()));
-ok('code-play shiki', (await play.locator('pre.shiki').count()) === 1);
+ok('code-play highlight', (await play.locator('pre.ox-highlight').count()) === 1);
 ok('aside rendered', (await page.locator('.ox-container--note').count()) > 0, String(await page.locator('.ox-container--note').count()));
 ok('aside markdown inside', (await page.locator('.ox-container--note strong, .ox-container--note code, .ox-container--note a, .ox-container--note p').count()) > 0);
 
@@ -57,19 +57,23 @@ ok('run button ja', (await runBtn.textContent())?.trim() === '実行');
 const overflowConfig = await playConfig(page, 0);
 ok('config debug kept', overflowConfig && overflowConfig.mode === 'debug', JSON.stringify(overflowConfig));
 await runBtn.click();
+// ch13 の先頭 widget は overflow(debug)。panic が stderr タブに可視化され
+// (失敗した実行のみ stderr 着地 = alpha.9 の挙動)、cargo のビルドノイズは
+// play-output.js が間引いていることを、画面に見えるテキストで検証する
 try {
   await page.waitForFunction(
-    () => {
-      const panel = document.querySelector('ox-code-play [data-panel="stdio"]');
-      const text = panel?.textContent.trim() ?? '';
-      return text.length > 0 && !text.includes('No stdio yet');
-    },
+    () => /attempt to add with overflow/.test(document.querySelector('ox-code-play')?.innerText ?? ''),
     { timeout: 30000 }
   );
-  const output = await play.locator('[data-panel="stdio"]').textContent();
-  ok('run output', output.trim().length > 0, output.trim().slice(0, 80).replace(/\n/g, '⏎'));
+  await page.waitForTimeout(800);
+  const visible = await play.evaluate((el) => el.innerText);
+  ok(
+    'run output (panic visible, no noise)',
+    visible.includes('attempt to add with overflow') && !/Compiling playground|Finished `/.test(visible),
+    visible.replace(/\s+/g, ' ').slice(0, 80)
+  );
 } catch {
-  ok('run output', false, 'timeout (network?)');
+  ok('run output (panic visible, no noise)', false, 'timeout (network?)');
 }
 
 // --- ダークモード切替 ---
@@ -149,14 +153,14 @@ ok('nightly config', Boolean(nightly), JSON.stringify(nightly));
 // --- wgsl ハイライト (highlight-fallback) ---
 await page.goto(`${BASE}/gpu/12-cpu-vs-gpu/`, { waitUntil: 'networkidle' });
 const wgslPlain = await page.evaluate(
-  () => document.querySelectorAll('code.language-wgsl:not(.shiki code)').length
+  () => document.querySelectorAll('code.language-wgsl:not(.ox-highlight code)').length
 );
-const wgslShiki = await page.evaluate(() =>
-  [...document.querySelectorAll('pre.shiki')].filter((el) =>
-    el.innerHTML.includes('--octc-shiki-token-keyword')
+const wgslHl = await page.evaluate(() =>
+  [...document.querySelectorAll('pre.ox-highlight')].filter((el) =>
+    el.innerHTML.includes('--octc-syntax-token-keyword')
   ).length
 );
-ok('wgsl highlighted', wgslShiki > 0, `shiki=${wgslShiki}`);
+ok('wgsl highlighted', wgslHl > 0, `highlighted=${wgslHl}`);
 ok('wgsl no plain block', wgslPlain === 0, `plain=${wgslPlain}`);
 
 // --- トップページ ---

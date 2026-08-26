@@ -6,27 +6,11 @@
 // widget はページ内の出現順で manifest と突き合わせる(同一スニペットを
 // debug/release で使い分けるページがあるため、コード内容だけでは特定できない)。
 // 順序やコードが食い違ったら移行機構のドリフトなのでビルドを失敗させる。
-import { globSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { MANIFEST } from './preprocess-docs.mjs';
 
 const normalize = (s) => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
-
-// SSG は本文の < / & の一部を16進エンティティで出力するが、code-play の
-// SSG マッチングは &lt; / &amp; しか解さない(3.0.0-alpha.1)。等価な
-// 名前付きエンティティへ正規化する。codePlay の closeBundle より前に呼ぶこと。
-export function normalizeEntities(outDir = 'dist') {
-  let pages = 0;
-  for (const path of globSync(`${outDir}/**/*.html`)) {
-    const html = readFileSync(path, 'utf8');
-    const next = html.replaceAll('&#x3C;', '&lt;').replaceAll('&#x26;', '&amp;');
-    if (next !== html) {
-      writeFileSync(path, next);
-      pages++;
-    }
-  }
-  return pages;
-}
 
 export function patchCodePlay(outDir = 'dist') {
   const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));

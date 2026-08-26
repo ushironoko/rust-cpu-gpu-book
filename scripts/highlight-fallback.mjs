@@ -1,20 +1,21 @@
-// v3 で highlightLangs が削除され、tree-sitter 文法の無い言語
-// (wgsl/asm/llvm/toml)は <pre><code class="language-*"> のまま
-// 出力される。ここでは SSG 後の dist HTML を走査し、該当ブロックだけを
-// Shiki でハイライトして ox-content 本体と同一の CSS 変数契約
-// (--octc-shiki-* + GitHub Dark フォールバック、crates/ox_content_highlight
-// 由来)の markup に置き換える。upstream に文法が追加されたら削除する。
+// v3 で highlightLangs が削除され、tree-sitter 文法の無い言語は
+// <pre><code class="language-*"> のまま出力される。ここでは SSG 後の
+// dist HTML を走査し、該当ブロックだけを Shiki でハイライトして
+// ox-content 本体と同一の CSS 変数契約(--octc-shiki-* + GitHub Dark
+// フォールバック、crates/ox_content_highlight 由来)の markup に置き換える。
+// toml/wgsl は 3.0.0-alpha.4 でネイティブ文法が追加されたため対象から
+// 外した(#817)。asm/llvm も upstream に文法が追加されたら削除する。
 import { globSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHighlighter, createCssVariablesTheme } from 'shiki';
-import wgsl from 'shiki/langs/wgsl.mjs';
 import asm from 'shiki/langs/asm.mjs';
 import llvm from 'shiki/langs/llvm.mjs';
-import toml from 'shiki/langs/toml.mjs';
 
-const LANGS = [...wgsl, ...asm, ...llvm, ...toml];
-const LANG_NAMES = ['wgsl', 'asm', 'llvm', 'toml'];
+const LANGS = [...asm, ...llvm];
+const LANG_NAMES = ['asm', 'llvm'];
 
-// ox-content native highlighter (theme.rs) と同一のトークン→フォールバック表
+// ox-content native highlighter (theme.rs) と同一のトークン→フォールバック表。
+// 変数プレフィックスは alpha.9 で --octc-shiki-* から --octc-syntax-* に、
+// pre のクラスは shiki から ox-highlight に改名された
 const VARIABLE_DEFAULTS = {
   foreground: '#e6edf3',
   background: '#0d1117',
@@ -47,7 +48,7 @@ export async function highlightFallback(outDir = 'dist') {
     themes: [
       createCssVariablesTheme({
         name: 'css-variables',
-        variablePrefix: '--octc-shiki-',
+        variablePrefix: '--octc-syntax-',
         variableDefaults: VARIABLE_DEFAULTS,
         fontStyle: true,
       }),
@@ -65,6 +66,7 @@ export async function highlightFallback(outDir = 'dist') {
         const code = decodeEntities(body).replace(/\n$/, '');
         return highlighter
           .codeToHtml(code, { lang, theme: 'css-variables' })
+          .replace('class="shiki css-variables"', 'class="ox-highlight css-variables"')
           .replace(/\n$/, '');
       });
       if (next !== html) writeFileSync(path, next);

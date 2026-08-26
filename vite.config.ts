@@ -5,7 +5,7 @@ import { codePlay } from '@ox-content/code-play';
 import holo from '@ox-content/theme-holo';
 import github from '@ox-content/theme-color-github';
 import { preprocessDocs } from './scripts/preprocess-docs.mjs';
-import { normalizeEntities, patchCodePlay } from './scripts/patch-code-play.mjs';
+import { patchCodePlay } from './scripts/patch-code-play.mjs';
 import { highlightFallback } from './scripts/highlight-fallback.mjs';
 import { verifyBuild } from './scripts/verify-build.mjs';
 import { buildSidebar } from './config/sidebar.mjs';
@@ -36,21 +36,6 @@ function preprocessPlugin(): Plugin {
           }
         }, 100);
       });
-    },
-  };
-}
-
-// SSG は本文中の < と & の一部を16進エンティティ(&#x3C; / &#x26;)で出力するが、
-// code-play の SSG マッチング(decodeHtml)は名前付きエンティティしか解さず、
-// 該当コードを含む play フェンスがラップされない(3.0.0-alpha.1 の既知の癖)。
-// codePlay の closeBundle より前に等価な名前付きエンティティへ正規化して回避する。
-function normalizeEntitiesPlugin(): Plugin {
-  return {
-    name: 'book:normalize-entities',
-    apply: 'build',
-    closeBundle() {
-      const n = normalizeEntities('dist');
-      console.log(`[normalize-entities] ${n} pages normalized`);
     },
   };
 }
@@ -127,7 +112,6 @@ export default defineConfig({
         ],
       },
     }),
-    normalizeEntitiesPlugin(),
     codePlay({
       // Rust: Run + Typecheck。実行は play.rust-lang.org へブラウザから
       // 直接 POST(旧 rust-play.js と同方式)。widget 別の channel/mode は
