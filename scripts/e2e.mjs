@@ -180,6 +180,22 @@ try {
   await menuBtn.click({ timeout: 5000 }).catch(() => {});
   await page.waitForTimeout(400);
   ok('mobile sidebar opens', await page.locator('.sidebar').isVisible().catch(() => false));
+  // シートが header〜footer 間に収まり、内部スクロールできること
+  // (top 制約が外れると scrollHeight == clientHeight になり検出できる)
+  const scroll = await page.evaluate(() => {
+    const sb = document.querySelector('.sidebar');
+    sb.scrollTop = 120;
+    return {
+      overflows: sb.scrollHeight > sb.clientHeight,
+      canScroll: sb.scrollTop > 0,
+      topOnScreen: sb.getBoundingClientRect().top >= 0,
+    };
+  });
+  ok(
+    'mobile sidebar scrolls',
+    scroll.overflows && scroll.canScroll && scroll.topOnScreen,
+    JSON.stringify(scroll)
+  );
   await page.screenshot({ path: `${SHOT}/mobile.png` });
 } catch (e) {
   ok('mobile section', false, String(e).slice(0, 80));

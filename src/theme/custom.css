@@ -62,13 +62,15 @@ body:not(.entry-page) .header {
   border-bottom: 1px solid color-mix(in srgb, var(--octc-color-border) 48%, transparent);
 }
 
-/* モバイルではサイドバーがボトムシートになるが、holoの無スコープな
-   top:0 がベーステーマの top:auto を上書きし、閉じた状態のシートが
-   top:0 + bottom:0 + max-height:70vh + translateY(100%) の組み合わせで
-   画面下部に漏れて見える。ベーステーマの値へ戻す。 */
+/* モバイルのサイドバーは alpha.9 (#915) から「header〜footer 間のフル
+   シートを translateY で開閉し、内部を overflow-y: auto でスクロール」
+   という設計になった。holoの無スコープな top:0 がベーステーマの
+   top: var(--octc-header-height) を上書きしてシートがヘッダーの裏まで
+   伸びるため、ベーステーマの値へ戻す(top を外すと高さ制約が消えて
+   シートがコンテンツ全高になり、内部スクロールが死ぬ)。 */
 @media (max-width: 768px) {
   .sidebar {
-    top: auto;
+    top: var(--octc-header-height);
     padding-top: 1.5rem;
   }
 
